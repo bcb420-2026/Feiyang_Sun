@@ -1,0 +1,30 @@
+---
+title: "BCB420 Week 1 Exercise"
+output: html_notebook
+---
+
+## Set seed and generate random data matrix
+```{r}
+set.seed(624)
+mat <- matrix(rnbinom(n = 420, 1, 0.01), nrow = 5, ncol = 10)
+
+```
+
+## Apply column and row names
+```{r}
+colnames(mat) <- c(paste0("cond", 1:5),
+                      paste0("ctrl", 1:5))
+rownames(mat) <- c(paste0("gene", 1:5))
+
+```
+
+## Compute fold change
+```{r}
+mean_cond <- rowMeans(mat[, 1:5])
+mean_ctrl <- rowMeans(mat[, 6:10])
+fold_change <- mean_cond/mean_ctrl
+
+fc_df <- data.frame(Gene = rownames(mat),
+                    Fold_change = fold_change)
+
+```
