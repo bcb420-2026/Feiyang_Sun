@@ -1,0 +1,175 @@
+---
+title: "BCB420 Mock quiz"
+author: "Feiyang Sun"
+date: "2026-01-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Mock Quiz
+```{r}
+myIDs <- data.frame(uID = c("P38903", "P31383", "P47177", NA, "Q07747"),
+                    name = c("2A5D", "2AAA", "2NDP", "3HAO", "AAD4"),
+                    refID = c("NP_014657", "NP_009386", "NP_012683.1",
+                              "NP_012559", NA),
+                    ctrl = c(19.489, 7.776, 9.221, 21.686, 9.585),
+                    stim = c(6.841, 2.164, 61.569, 27.792, 11.026),
+                    stringsAsFactors = FALSE)
+
+```
+
+
+```{r}
+## Q2: Write an R expression that returns all gene names from myIDs that begin a number.
+myIDs$name[grep(myIDs$name, pattern = "^[0-9]")]
+# Note: Regular expression (regex)
+
+```
+
+
+```{r}
+## Q3: Write an R expression that returns all gene names which have expression greater than 20 in at least one condition.
+myIDs$name[which(myIDs$ctrl > 20 | myIDs$stim > 20)]
+
+```
+
+
+```{r}
+## Q4: Write an R expression that adds a column of expression changes as fold changes (i.e. log-ratio) values to the myIDs data frame.
+myIDs$fold_change = log(myIDs$stim/myIDs$ctrl, base = 2)
+
+```
+
+
+```{r}
+## Q5: Write an R expression that returns all gene names from myIDs for which both UniProt ID and RefSeqID are available,
+myIDs$name[which(!is.na(myIDs$uID) & !is.na(myIDs$refID))]
+
+```
+
+
+```{r}
+## Q6: You type install.packages("stringr") into the RStudio console, since you want to use the str_pad() function. But when you then type str_pad("DIVMTQSPSS", 15), you get the error: Error in str_pad("DIVMTQSPSS", 15): could not find function "str_pad". What happened, how do you fix this?
+library("stringr")
+
+```
+
+
+```{r}
+## Q7: Given seq <- "mssyfvnsfpngpdy", what is one way this string representation of a sequence can be split into a vector of single characters?
+seq <- "mssyfvnsfpngpdy"
+unlist(strsplit(seq, split = ""))
+
+```
+
+
+```{r}
+tf <- data.frame(name = "Irx2",
+                 species = "Maylandia zebra",
+                 taxId = "106582",
+                 seqLen = 3884,
+                 stringsAsFactors = FALSE)
+tf <- rbind(tf, dataframe(name = "Sox2",
+                          species = "Gallus gallus",
+                          taxId = "208526",
+                          seqLen = 1182,
+                          stringsAsFactors = FALSE))
+tf <- rbind(tf, dataframe(name = "SOX2",
+                          species = "Homo Sapiens",
+                          taxId = "9606",
+                          seqLen = 2512,
+                          stringsAsFactors = FALSE))
+
+```
+
+
+```{r}
+## Q8: Write a command to return all names of proteins shorter than 2000 residues.
+tf$name[which(tf$seqLen < 2000)]
+
+```
+
+
+```{r}
+## Q9: Write a command to return the number of proteins longer than "Hoxa5".
+length(which(tf$seqLen > tf$seqLen[which(tf$name == "Hoxa5")]))
+
+```
+
+
+```{r}
+## Q10: Write a command that retrieves all distinct species in tf.
+unique(tf$species)
+
+```
+
+
+```{r}
+## Q11: Given x <- 6:1, for each of the below check true for the R commands that give the result 3.5.
+
+x <- 6:1
+mean(x)
+mean(x[])
+mean(x[c(-1, -6)])
+mean(x[c(2,2,5,5)])
+sum(x)/length(x)
+mean(x[1:6])
+mean(6:1)
+mean(x[c(TRUE,FALSE,FALSE,FALSE,FALSE,TRUE)])
+mean(x[x==3] + 0.5)
+mean(x[X>2]) - 1
+
+```
+
+
+```{r}
+## Q12: What does this piece of code set mySeq do?
+mySeq <- "ABC_12"
+mySeq <- gsub("[^a-zA-Z]", "", mySeq)
+
+```
+
+
+```{r}
+# Given the R code:
+m <- matrix(c(0,1,1,2,3,5,8,13,21,34,55,89), byrow = FALSE, ncol = 3, nrow = 4)
+
+```
+
+
+```{r}
+## Q14: What is the output of:
+m[as.integer(TRUE), TRUE]
+
+## Q15: What is the output of:
+m[nrow(m), ncol(m)]
+
+## Q16: What is the output of:
+m[1, 2]
+
+## Q17: What is the output of:
+m[, 2]
+ 
+## Q18: What is the output of:
+# m[ncol(m), nrow(m)]
+
+```
+
+
+```{r}
+## Q19: By excluding the parameter "byrow" would the answer to the previous question be different? If yes, how? If not, why not? How is it better to the write the function, with or without the byrow parameter and why?
+
+# Answer: byrow = FALSE is default.
+
+```
+
+
+```{r}
+## Q20: Name the different types of identifiers that can be associated with a protein?
+
+# Answer: uniprot(Q00987), refseq(NP_001138811), ensembl(ENST0000258149), HGNC/Hugo Gene ID(HGNC:6973), MGI(finally recently retired)
+
+```
