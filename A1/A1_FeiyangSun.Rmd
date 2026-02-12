@@ -1,0 +1,707 @@
+---
+title: "BCB420 Assignment 1"
+author: "Feiyang Sun"
+date: "2026-02-10"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+    theme: cerulean
+    highlight: tango
+    fig_caption: true
+    df_print: paged 
+    code_folding: hide
+bibliography: A1_references.bib
+csl: apa.csl
+nocite: '@*'
+link-citations: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# Introduction 
+
+## Paper Overview
+
+In this assignment, I selected the RNA-seq dataset (GEO accession: GSE263406) from a study [@tan_cell_2025] investigating how nonsense-mediated RNA decay (NMD) [@karousis_nonsense-mediated_2016] is regulated in a cell type-specific manner during human neural development. The study shows that NMD sensitivity is strongly influenced by cellular context, with hundreds of transcripts becoming either more sensitive or resistant to NMD as human embryonic stem cells (hESCs) differentiate into neural progenitor cells (NPCs). It also reveals that the NMD factor UPF3B regulates a distinct subset of targets compared to the core factor UPF2.
+
+Overall, the dataset consists of bulk RNA-seq data from NPCs differentiated from hESCs, comparing control and UPF3B knockout (KO) groups to identify UPF3B-dependent NMD target transcripts.
+
+## Dataset Selection
+
+I found and chose this dataset by searching through the GEO database website. This dataset profiles human embryonic stem cells differentiating into neural progenitor cells, including control and UPF3B knockout groups. I am interested in exploring how cellular context affects nonsense-mediated RNA decay (NMD) and gene expression. The high-quality bulk RNA-seq data is well-suited for cleaning, normalization, and differential expression analysis.
+
+## Package installation
+
+All packages required for subsequent analyses were checked for installation and loaded into the R environment. Make sure to install and load packages from Bioconductor [@BiocManager].
+
+```{r}
+if(!requireNamespace("knitr", quietly = TRUE)) {
+  install.packages("knitr")
+}
+
+if(!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+
+if(!requireNamespace("readr", quietly = TRUE)) {
+  install.packages("readr")
+}
+
+if(!requireNamespace("rmarkdown", quietly = TRUE)) {
+  install.packages("rmarkdown")
+}
+
+if(!requireNamespace("tidyr", quietly = TRUE)) {
+  install.packages("tidyr")
+}
+
+if(!requireNamespace("patchwork", quietly = TRUE)) {
+  install.packages("patchwork")
+}
+
+if(!requireNamespace("tibble", quietly = TRUE)) {
+  install.packages("tibble")
+}
+
+if(!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+
+if(!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+
+if(!requireNamespace("ggrepel", quietly = TRUE)) {
+  install.packages("ggrepel")
+}
+
+if(!requireNamespace("circlize", quietly = TRUE)) {
+  install.packages("circlize")
+}
+
+if(!requireNamespace("RColorBrewer", quietly = TRUE)) {
+  install.packages("RColorBrewer")
+}
+
+# Install and load packages from Bioconductor
+
+if(!requireNamespace("circlize", quietly = TRUE)) {
+  BiocManager::install("circlize")
+}
+
+if(!requireNamespace("ComplexHeatmap", quietly = TRUE)) {
+  BiocManager::install("ComplexHeatmap")
+}
+
+if(!requireNamespace("preprocessCore", quietly = TRUE)) {
+  BiocManager::install("preprocessCore")
+}
+
+if(!requireNamespace("GEOquery", quietly = TRUE)) {
+  BiocManager::install("GEOquery")
+}
+
+if(!requireNamespace("biomaRt", quietly = TRUE)) {
+  BiocManager::install("biomaRt")
+}
+
+```
+
+# Dataset assessing, cleaning, and mapping
+
+## Downloading data from GEO
+
+The bulk mRNA-seq dataset was on the Gene Expression Omnibus (GEO) with accession GSE263406, and could be accessed through R using the `GEOquery` package [@geoquery_2007]. Genes with no expression across all samples are removed.
+
+```{r, message=FALSE, warning=FALSE}
+# Load relevant libraries
+library("readr")
+library("rmarkdown")
+library("knitr")
+library("GEOquery")
+
+# Retrieve data from GEO
+gseid <- "GSE263406"
+if(!file.exists("GSE263406/GSE263406_rawcounts.txt.gz")) {
+  getGEOSuppFiles(gseid, makeDirectory = TRUE)
+}
+
+# Read in the dataset
+raw_counts <- read.table("GSE263406/GSE263406_rawcounts.txt.gz",
+                         header = TRUE)
+# dim(raw_counts) # 61551    18
+
+# Remove genes with no expression across all samples
+raw_counts_filtered <- raw_counts[rowSums(raw_counts[, 7:18]) != 0, ]
+# dim(raw_counts_filtered) # 43884    18
+
+# Display first 10 rows and columns
+paged_table(raw_counts_filtered[1:10, 1:10])
+
+```
+**Table 1: Raw read counts for GSE263406.**  The full dataset (after simple filtering) contains 43884 genes and 12 samples (columns 7 to 18): six control replicates (Ctrl_1-6) and six UPF3B knockout replicates (UPF3B.KO_1-6). Additional gene-specific metadata is provided in columns 2 to 6. For clarity, only the first 10 rows and first 10 columns are shown.
+
+## Assessing data
+
+In the following step, I will review the dataset and calculate key summary metrics to ensure that only the appropriate genes are carried forward into the subsequent analyses. A total of 43,884 unique genes were profiled in the 12 samples included in the study.
+
+To visualise the sequencing depth and compare samples, I generated a bar plot showing library sizes for each sample, with colors distinguishing the control and UPF3B knockout conditions. This allowed me to quickly identify potential outliers and ensure that the dataset is suitable for downstream analysis.
+
+```{r, message=FALSE, warning=FALSE}
+# Ignore metadata in column 2-6, including chromosomal positions, strand information, and length
+counts <- raw_counts_filtered[, -(2:6)]
+
+# Calculate sample number, gene number, library sizes, etc.
+num_samples <- ncol(counts) - 1
+num_genes <- nrow(counts)
+num_unique_genes <- nrow(unique(counts["Geneid"]))
+
+library_s <- colSums(counts[, 2:ncol(counts)], na.rm = TRUE)
+library_sizes <- data.frame(sample = names(library_s),
+                            library_size = library_s)
+rownames(library_sizes) <- c(1:12)
+
+# Display library sizes
+paged_table(library_sizes)
+
+```
+**Table 2. Library sizes for each sample in the dataset.** The library size corresponds to the total number of reads mapped per sample after filtering out genes with zero counts across all samples.
+
+
+## Visualizing library sizes across samples
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+
+# Set conditions as Ctrl and UPF3B_KO
+library_sizes$condition <- c(rep("Ctrl", 6), rep("UPF3B_KO", 6))
+
+# Set unit as million
+library_sizes$library_size_million <- library_sizes$library_size / 1e6
+
+# Calculate the mean value across all samples
+mean_library <- mean(library_sizes$library_size_million)
+
+ggplot(library_sizes, aes(x = sample, y = library_size_million, fill = condition)) +
+  geom_bar(stat = "identity") +
+  geom_hline(yintercept = mean_library, 
+             linetype = "dashed",
+             color = "darkred",
+             size = 1) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  labs(title = "Library Size per Sample",
+       x = "Sample",
+       y = "Library Size (Millions of Reads)",
+       fill = "Condition") +
+  scale_fill_manual(values = c("Ctrl" = "#1f77b4", "UPF3B_KO" = "#ff7f0e"))
+
+```
+
+**Figure 1. Library sizes of each RNA-seq sample in the GSE263406 dataset.** Total read counts for each sample are shown in millions, with colors indicating experimental condition (blue = Control, orange = UPF3B knockout). This visualization allows comparison of sequencing depth across samples and helps identify potential outliers prior to downstream analyses.
+
+## Mapping to HUGO ids
+
+In the GEO dataset, genes are annotated using Ensembl gene IDs, so I will map these Ensembl gene IDs to the corresponding HGNC symbols whenever such mappings exist. Package biomaRt [@biomaRt] is applied in this step. One gene was associated with two HGNC symbols; only the first mapping was retained.
+
+```{r, message=FALSE, warning=FALSE}
+library(biomaRt)
+library(dplyr)
+
+# Save the cache file
+cache_file <- "id_conversion.rds"
+
+# Read in the file if it exist
+if (file.exists(cache_file)) {
+  id_mapping <- readRDS(cache_file)
+  
+} else {
+  # Link to Ensembl
+  ensembl <- useMart("ensembl")
+  ensembl <- useDataset("hsapiens_gene_ensembl", mart = ensembl)
+  
+  # First time mapping ENSG to HUGO
+  ensembl_ids <- unique(counts$Geneid)
+  id_mapping <- getBM(
+    attributes = c("ensembl_gene_id", "hgnc_symbol"),
+    filters = "ensembl_gene_id",
+    values = ensembl_ids,
+    mart = ensembl
+  )
+  saveRDS(id_mapping, cache_file)  # Save the cache file
+}
+
+# Only keep unique mapping
+id_mapping_unique <- id_mapping %>%
+  group_by(ensembl_gene_id) %>%
+  slice(1) %>%
+  ungroup()
+
+# Merge id_mapping with the original counts dataset
+counts_with_hugo <- counts %>%
+  left_join(id_mapping_unique, by = c("Geneid" = "ensembl_gene_id")) %>%
+  dplyr::select(Geneid, hgnc_symbol, everything())
+
+counts_hugo_only <- counts_with_hugo %>%
+  filter(!is.na(hgnc_symbol) & hgnc_symbol != "")
+
+counts_hugo_unique <- counts_hugo_only[!duplicated(counts_hugo_only$hgnc_symbol), ]
+
+# Display id_mapping
+paged_table(counts_hugo_unique[1:10,])
+
+```
+**Table 3. Summary of HGNC mapping for the dataset.** Of the 43,884 original genes, 31,282 were successfully mapped to HGNC symbols. The table shows the first 10 rows after removing entries with missing HGNC symbols. Some genes in the dataset do not have corresponding HGNC symbols. In cases where a gene mapped to multiple HGNC symbols, only one representative symbol was retained. If an HGNC symbol corresponds to multiple Ensembl IDs, only the first one was retained.
+
+# Data normalization
+
+## Create expression matrix
+
+The raw count data were first cleaned by removing duplicate or non-informative entries. The `hgnc_symbol` column was then set as the row names to uniquely identify each gene. The cleaned data frame was subsequently converted into a numeric matrix suitable for downstream analysis, such as log2 transformation, normalization, and visualization.
+
+```{r, message=FALSE, warning=FALSE}
+library(reshape2)
+
+clean_counts <- counts_hugo_unique
+rownames(clean_counts) <- clean_counts$hgnc_symbol
+clean_counts <- clean_counts[, !(names(clean_counts) %in% c("hgnc_symbol", "Geneid"))]
+
+# Matrix transform
+counts_mat <- as.matrix(clean_counts)
+
+# Log2 transform
+log2_counts <- log2(counts_mat + 1)
+
+```
+
+## Visualizing raw counts distribution
+
+To assess the overall expression distribution across samples prior to normalization, log2-transformed cleaned raw counts were visualized using both boxplots [@ggplot2] and density plots. Boxplots show the distribution of expression values for each sample, allowing detection of differences in library size or potential outlier samples. Density plots provide an overview of the global distribution of gene expression, illustrating the consistency across biological replicates and the general similarity between the two experimental conditions.
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+
+# Long form
+df_long <- melt(log2_counts)
+colnames(df_long) <- c("Gene","Sample","Expression")
+
+# Add conditions
+df_long$Condition <- rep(c(rep("Ctrl", 6), rep("UPF3B_KO", 6)),
+                          each = nrow(log2_counts))
+
+# Create boxplot
+ggplot(df_long, aes(x = Sample, y = Expression, fill = Condition)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("skyblue", "salmon")) +
+  labs(title = "Expression distribution per sample (Raw)",
+       x = "Sample",
+       y = "log2(Counts + 1)")
+
+```
+
+**Figure 2. Expression distribution of log2-transformed gene expression (Raw) across all samples.** Boxplots show the distribution of expression values for each sample, with six biological replicates for the control group (skyblue) and six for the UPF3B condition (salmon). The similar distribution of the boxes across replicates indicates consistent library size and normalization, with no obvious outlier samples.
+
+```{r, message=FALSE, warning=FALSE}
+library(reshape2)
+library(ggplot2)
+
+# Set colors for each sample
+sample_colors <- c(
+  colorRampPalette(c("skyblue","blue"))(6),
+  colorRampPalette(c("salmon","red"))(6)
+)
+
+names(sample_colors) <- colnames(log2_counts)
+
+# Create density plot
+ggplot(df_long, aes(x = Expression, color = Sample)) +
+  geom_density(size = 0.5, alpha = 0.5) +
+  theme_classic() +
+  labs(title = "Density distribution per sample (Raw)",
+       x = "log2(Counts + 1)",
+       y = "Density") +
+  scale_color_manual(values = sample_colors)
+
+```
+
+**Figure 3. Density distribution of log2-transformed gene expression (Raw) across all samples.** Six biological replicates per condition are colored in gradient blue (Ctrl) or red (UPF3B_KO). The curves show comparable expression distributions across samples, suggesting consistent data quality before normalization.
+
+
+## Filtering low expressions
+
+To focus on informative genes, lowly expressed genes were filtered using edgeR’s `filterByExpr()`, which removes genes with minimal read counts across samples [@edgeR]. After filtering, 19197 genes remained for analysis, while 12085 lowly expressed genes were excluded from the 12-sample dataset.
+
+```{r, message=FALSE, warning=FALSE}
+library("edgeR")
+
+groups <- factor(c(rep("Ctrl", 6), rep("UPF3B_KO", 6)))
+
+# Create a DGEList object
+dge <- edgeR::DGEList(counts = counts_mat,
+                      group = groups)
+
+# Filter out lowly expressed genes
+keep <- filterByExpr(dge, group = groups)
+counts_remove_low <- counts_mat[keep, ]
+
+n_genes_before <- nrow(counts_mat)
+n_genes_after  <- nrow(counts_remove_low)
+
+cat("Number of genes before filtering:", n_genes_before, 
+    "\nNumber of genes after filtering:", n_genes_after, 
+    "\nNumber of lowly expressed genes removed:", n_genes_before - n_genes_after, "\n")
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+library(reshape2)
+library(ggplot2)
+
+# Log2 transform
+log2_remove_low <- log2(counts_remove_low + 1)
+
+df_long_remove_low <- melt(log2_remove_low)
+colnames(df_long_remove_low) <- c("Gene","Sample","Expression")
+
+# Add condition info
+df_long_remove_low$Condition <- rep(c(rep("Ctrl", 6), rep("UPF3B_KO", 6)),
+                                    each = nrow(log2_remove_low))
+
+# Assign colors per sample
+ctrl_colors <- colorRampPalette(c("skyblue","blue"))(6)
+upf_colors <- colorRampPalette(c("salmon","red"))(6)
+sample_colors <- c(ctrl_colors, upf_colors)
+names(sample_colors) <- colnames(log2_remove_low)
+
+# Plot density distribution
+ggplot(df_long_remove_low, aes(x = Expression, color = Sample)) +
+  geom_density(size = 0.5, alpha = 0.5) +
+  theme_classic() +
+  labs(title = "Density distribution per sample (Low exp filtered)",
+       x = "log2(Counts + 1)",
+       y = "Density") +
+  scale_color_manual(values = sample_colors)
+
+ 
+```
+
+**Figure 4. Density distribution of log2-transformed gene expression across all samples after low expression filtered.** Each line represents one biological replicate, with six replicates per condition. Ctrl samples are shown in shades of blue and UPF3B_KO samples in shades of red. After filtering, the large number of very lowly expressed genes (left tail) is removed, resulting in a distribution that is more centered and visually balanced across samples while preserving the overall expression patterns.
+
+## TMM normalization
+
+TMM (Trimmed Mean of M-values) normalization [@robinson_scaling_2010] is applied because the dataset consists of bulk RNA-seq data comparing control and UPF3B-KO human neural progenitor cells (NPCs). TMM is particularly suitable here as it adjusts for differences in library size and sequencing depth across samples, while assuming that the majority of genes are not differentially expressed—a reasonable assumption in this context since only a subset of mRNAs are expected to be sensitive to NMD. By trimming extreme high- and low-expression genes, TMM provides stable normalization factors that preserve the relative expression of most transcripts, allowing us to accurately quantify differential expression of UPF3B-target RNAs in NPCs. This approach is widely recommended for bulk RNA-seq datasets with multiple replicates per condition, such as ours with six replicates per group.
+```{r, message=FALSE, warning=FALSE}
+library(edgeR)
+
+groups <- factor(c(rep("Ctrl", 6), rep("UPF3B_KO", 6)))
+
+# Create DGEList object
+dge_norm <- edgeR::DGEList(counts = counts_remove_low, group = groups)
+
+# TMM normalization
+dge_norm <- calcNormFactors(dge_norm, method = "TMM")
+
+# normalized CPM (counts per million)
+norm_cpm <- cpm(dge_norm, normalized.lib.sizes = TRUE)
+norm_cpm_df <- as.data.frame(norm_cpm)
+norm_cpm_df <- norm_cpm_df[order(rownames(norm_cpm_df)), ]
+
+# Check normalization factors
+# dge$samples$norm.factors
+
+paged_table(norm_cpm_df[1:10,])
+
+```
+
+**Table 4. Counts-per-million (CPM) values for each gene across all samples following TMM normalization and low-expression filtering.** These normalized expression levels account for variations in library size and RNA composition between samples, facilitating reliable comparison of gene activity across the Ctrl and UPF3B_KO groups. For clarity, only the first 10 rows are shown.
+
+```{r, message=FALSE, warning=FALSE}
+library(reshape2)
+library(ggplot2)
+
+# log2 transform
+log2_norm_cpm <- log2(norm_cpm + 1)
+
+df_long_norm <- melt(log2_norm_cpm)
+colnames(df_long_norm) <- c("Gene","Sample","Expression")
+
+# Add condition info
+df_long_norm$Condition <- rep(c(rep("Ctrl", 6), rep("UPF3B_KO", 6)),
+                              each = nrow(log2_norm_cpm))
+
+# Set colors
+ctrl_colors <- colorRampPalette(c("skyblue","blue"))(6)
+upf_colors <- colorRampPalette(c("salmon","red"))(6)
+sample_colors <- c(ctrl_colors, upf_colors)
+names(sample_colors) <- colnames(log2_norm_cpm)
+
+# Box plot
+ggplot(df_long_norm, aes(x = Sample, y = Expression, fill = Condition)) +
+  geom_boxplot(outlier.size=0.5) +
+  scale_fill_manual(values=c("Ctrl"="skyblue","UPF3B_KO"="salmon")) +
+  theme_classic() +
+  labs(title="Expression distribution per sample (TMM-normalized)", 
+       y="log2(CPM + 1)", 
+       x="Sample") +
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+
+```
+
+**Figure 5. Expression distribution of log2-transformed CPM values after TMM normalization and low-expression filtering.** Each box represents one biological replicate, with six replicates per condition. Compared to the raw counts (Figure 2.), the interquartile ranges and medians of all samples are more aligned, reflecting that library size differences and compositional biases have been corrected. The removal of lowly expressed genes also eliminates the extreme low-count tail, resulting in distributions that are more centered and comparable across samples. These normalized data are suitable for downstream analyses, including density visualization, multidimensional scaling (MDS), and differential expression testing.
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+
+# Density plot
+ggplot(df_long_norm, aes(x = Expression, color = Sample)) +
+  geom_density(size=0.5, alpha=0.5) +
+  scale_color_manual(values = sample_colors) +
+  theme_classic() +
+  labs(title="Density distribution per sample (TMM-normalized)",
+       x="log2(CPM + 1)",
+       y="Density")
+
+```
+
+**Figure 6. Expression distribution of log2-transformed CPM values after TMM normalization.** Each line represents one biological replicate, with six replicates per condition. The lines from all twelve samples overlap more closely compared to raw counts (Figure 3.), indicating that library size and compositional differences have been effectively corrected. A prominent peak is observed at low log2CPM values (~0–2), reflecting the natural accumulation of lowly expressed genes in bulk RNA-seq data. This peak is expected and does not indicate a normalization issue. Overall, the distributions demonstrate that the normalized data are suitable for downstream analyses, such as multidimensional scaling (MDS) and differential expression testing.
+
+# Differential expression analysis
+
+## Multidimensional scaling
+
+To evaluate sample similarity and variability, multidimensional scaling (MDS) [@edgeR] was performed on TMM-normalized log2 CPM values. This projects high-dimensional gene expression data into two dimensions, allowing visualization of replicate clustering and separation between experimental conditions, and enabling assessment of normalization effectiveness and data quality for downstream analyses.
+```{r, message=FALSE, warning=FALSE}
+library(edgeR)
+library(ggplot2)
+library(ggrepel)
+
+groups <- factor(c(rep("Ctrl", 6), rep("UPF3B_KO", 6)))
+
+mds <- plotMDS(log2_norm_cpm, plot=FALSE)
+
+mds_df <- data.frame(
+  Sample = colnames(log2_norm_cpm),
+  MDS1 = mds$x,
+  MDS2 = mds$y,
+  Condition = groups
+)
+
+# ggplot2 visualization
+ggplot(mds_df, aes(x = MDS1, y = MDS2, color = Condition)) +
+  geom_point(size = 4) +
+  geom_text_repel(aes(label=Sample), 
+                  size=2,
+                  segment.size = 0) +
+  scale_color_manual(values=c("Ctrl"="blue", "UPF3B_KO"="red")) +
+  theme_classic() +
+  labs(title="MDS plot of TMM-normalized RNA-seq samples",
+       x="MDS Dimension 1",
+       y="MDS Dimension 2")
+
+```
+
+**Figure 7. Multidimensional scaling (MDS) plot of TMM-normalized log2 CPM values.** Each point represents a biological replicate, with Ctrl in blue and UPF3B_KO in red. The two groups separate clearly along the first dimension, while replicates within each group cluster closely (except for Ctrl_5), indicating effective normalization and reproducible gene expression patterns. *Ctrl_5 is slightly separated from other Ctrl replicates along Dimension 2, possibly reflecting minor biological variation or technical differences, such as library size, RNA quality, or batch effects.* Overall, the replicate clustering supports reproducibility of the dataset.
+
+Figure 7 illustrates that samples segregate mainly by treatment, with Ctrl and UPF3B_KO replicates forming tight clusters. This suggests that the knockout condition is the dominant source of expression variation, and thus will serve as the primary factor in the design matrix for differential expression analysis.
+
+## Biological coefficient of variation plot
+
+Differential expression analysis was performed using the edgeR package [@edgeR]. edgeR was selected because it models RNA-seq count data using a negative binomial framework and incorporates TMM normalization to account for library size and compositional differences between samples. Given the moderate number of biological replicates per group (Ctrl vs UPF3B_KO), edgeR’s dispersion estimation and quasi-likelihood framework provide robust control of false positives while maintaining statistical power.
+
+```{r, message=FALSE, warning=FALSE}
+library(edgeR)
+
+# Create design matrix
+group <- factor(dge_norm$samples$group)
+design <- model.matrix(~ group)
+
+dge_norm <- estimateDisp(dge_norm, design)
+
+# Plotting BCV
+edgeR::plotBCV(dge_norm, main = "Biological Coefficient of Variation")
+```
+
+**Figure 8. Biological Coefficient of Variation (BCV) plot of the experimental data.** The BCV plot showed the expected inverse relationship between dispersion and expression level, with higher variability observed among lowly expressed genes. Most genes closely followed the trended dispersion curve, and BCV values were largely within the range of 0.1-0.4. The estimated common dispersion was approximately 0.1, indicating relatively low biological variability among replicates and stable variance estimation.
+
+## Calculating p-values & multiple hypothesis testing
+
+Differential expression analysis was performed using the quasi-likelihood F-test in edgeR. P-values were calculated for each gene to assess the significance of expression differences between Ctrl and UPF3B_KO samples. 
+
+To account for multiple hypothesis testing across thousands of genes, the p-values were adjusted using the Benjamini-Hochberg (BH) method [@benjamini1995], which controls the false discovery rate (FDR) while maintaining statistical power. Genes with FDR < 0.05 were considered significantly differentially expressed, resulting in X genes. An additional filter of |log2 fold change| > 1 was applied to identify high-confidence changes, yielding Y genes. These thresholds were chosen to balance statistical significance and biological relevance.
+
+```{r, message=FALSE, warning=FALSE}
+
+fit <- glmQLFit(dge_norm, design)
+qlf <- glmQLFTest(fit, coef = 2)
+
+qlf_table <- topTags(qlf, n = Inf)$table
+
+# Pass FDR
+FDR <- sum(qlf_table$FDR < 0.05)
+
+# Pass FDR + fold change
+FDR_FC <- sum(qlf_table$FDR < 0.05 & abs(qlf_table$logFC) > 1)
+
+cat("Number of genes passing FDR < 0.05:", FDR, 
+    "\nNumber of genes passing FDR < 0.05 and |log2FC| > 1:", FDR_FC, "\n")
+
+paged_table(qlf_table[1:10, ])
+```
+
+**Table 5. Differentially expressed genes identified between Ctrl and UPF3B_KO samples.**
+The table shows the top genes ranked by quasi-likelihood F-test results from edgeR, including log2 fold change, logCPM, F-statistic, p-value, and FDR (Benjamini-Hochberg corrected). Using an FDR cutoff of 0.05, 9429 genes were considered significantly differentially expressed. Applying an additional threshold of |log2FC| > 1 yielded 1209 high-confidence genes. For clarity, only the first 10 rows and first 10 columns are shown.
+
+## Volcano plot
+
+```{r, message=FALSE, warning=FALSE}
+library(ggplot2)
+library(ggrepel)
+library(dplyr)
+
+qlf_table$genes <- rownames(qlf_table)
+
+# Build dataframe
+volcano_df <- qlf_table %>%
+  mutate(
+    direction = case_when(
+      FDR < 0.05 & logFC > 1  ~ "Up",
+      FDR < 0.05 & logFC < -1 ~ "Down",
+      TRUE ~ "Not sig"
+    ),
+    Significant = FDR < 0.05
+  )
+
+# Mark genes to label
+genes_to_label <- c(
+  head(volcano_df[order(volcano_df$FDR), "genes"], 10)
+)
+
+volcano_df <- volcano_df %>%
+  mutate(label = if_else(genes %in% genes_to_label, genes, NA_character_))
+
+# Plot
+ggplot(volcano_df, aes(x = logFC, y = -log10(FDR))) +
+  geom_point(aes(color = direction), alpha = 0.7, size = 1.5) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", color = "steelblue") +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", color = "steelblue") +
+  geom_text_repel(aes(label = label),
+                  na.rm = TRUE,
+                  box.padding = 0.3,
+                  point.padding = 0.2,
+                  max.overlaps = 10) + 
+  scale_color_manual(values = c("Up" = "red", "Down" = "blue", "Not sig" = "grey70")) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title = "Volcano Plot: Ctrl vs UPF3B_KO",
+    x = "log2 Fold Change",
+    y = "-log10(FDR)",
+    color = "Expression"
+  )
+```
+
+**Figure 9. Volcano plot of differential gene expression between UPF3B_KO and Ctrl samples.** Each point represents a gene, with the x-axis showing log2 fold change (UPF3B_KO relative to Ctrl) and the y-axis showing -log10(FDR). Red points indicate significantly up-regulated genes (n = 482), blue points indicate significantly down-regulated genes (n = 727), and grey points indicate non-significant genes (n = 17,988). Ten most significant hits (passing FDR < 0.05) are labeled. The dashed vertical lines mark log2 fold-change thresholds (+-1) and the horizontal line marks the FDR cutoff (0.05), highlighting genes with biologically meaningful and statistically significant expression changes.
+
+```{r, message=FALSE, warning=FALSE}
+up_genes <- sum(volcano_df$FDR < 0.05 & volcano_df$logFC > 1)
+down_genes <- sum(volcano_df$FDR < 0.05 & volcano_df$logFC < -1)
+not_sig_genes <- sum(!(volcano_df$FDR < 0.05 & abs(volcano_df$logFC) > 1))
+
+cat("Up-regulated genes:", up_genes, 
+    "\nDown-regulated genes:", down_genes, 
+    "\nNot significant genes:", not_sig_genes)
+
+```
+
+In human neural progenitor cells (NPCs), UPF3B knockout leads to a greater number of down-regulated genes (n = 727) compared with up-regulated genes (n = 482), indicating that loss of UPF3B probably reduces target gene expression in this cell type. This pattern contrasts with observations in human embryonic stem cells (ESCs), where UPF3B disruption has been reported to produce a more balanced or even opposite effect on gene expression. These results suggest that UPF3B’s regulatory impact is highly context-dependent and may vary across developmental stages.
+
+## Top hits - Heatmap
+
+```{r, message=FALSE, warning=FALSE}
+library(ComplexHeatmap)
+library(circlize)
+library(RColorBrewer)
+
+top_hits <- qlf_table %>%
+  arrange(FDR) %>%
+  head(30) %>%
+  pull(genes)
+
+heatmap_matrix <- log2_norm_cpm[top_hits, ]
+
+# Z-score
+hm_z <- t(scale(t(heatmap_matrix)))
+
+# Sample notation
+treatment_data <- as.factor(dge_norm$samples$group)
+treat_levels <- levels(treatment_data)
+treat_cols <- setNames(
+  brewer.pal(max(2, length(treat_levels)), "Set2")[seq_along(treat_levels)],
+  treat_levels
+)
+
+annot <- HeatmapAnnotation(
+  Treatment = treatment_data,
+  col = list(Treatment = treat_cols),
+  annotation_legend_param = list(Treatment = list(title = "Treatment"))
+)
+
+# Color function
+color_function <- colorRamp2(c(-2, 0, 2), c("blue", "white", "red"))
+
+# Heatmap plotting
+Heatmap(
+  hm_z,
+  name = "log2 CPM (z-score)",
+  col = color_function,
+  top_annotation = annot,
+  show_row_names = TRUE,
+  show_column_names = TRUE,
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  row_title = "Top 30 significant genes (edgeR: UPF3B_KO vs Ctrl)",
+  column_title = "Samples"
+)
+
+```
+
+**Figure 10. Heatmap of top 30 significant genes from UPF3B_KO vs Ctrl samples.** Each row represents a gene (z-score scaled log2 CPM) and each column represents a sample. Red indicates higher relative expression and blue indicates lower relative expression. Genes cluster into two major groups, showing complementary expression patterns: genes up-regulated in UPF3B_KO are generally down-regulated in Ctrl, and vice versa. Samples cluster clearly by treatment condition, with all Ctrl samples grouping together and all UPF3B_KO samples grouping together.
+
+# Conclusion
+I analyzed bulk RNA-seq data from human neural progenitor cells (NPC) comparing UPF3B knockout (UPF3B_KO) to controls. After quality control, low-expression filtering, and TMM normalization, exploratory visualizations (boxplots, density plots, and MDS) confirmed sample integrity and guided model design. Differential expression analysis using edgeR revealed that UPF3B loss predominantly down-regulates target genes in NPCs, consistent with previous findings in the original study [@tan_cell_2025]. Heatmaps and volcano plots showed clear treatment-driven patterns, with samples clustering by condition and top genes displaying complementary expression changes. These results support the conclusion that UPF3B might play a critical, context-dependent role in regulating gene expression during NPC differentiation.
+
+### Why is the dataset of interest to you? {.unnumbered}
+I am particularly interested in the physiological mechanisms underlying neurodevelopmental disorders. This dataset allows me to investigate the role of UPF3B, a key factor in the nonsense-mediated mRNA decay (NMD) pathway, in human neural progenitor cells. Comparing UPF3B knockout and control cells enables identification of genes affected by UPF3B loss and provides insights into cell type-specific regulation relevant to neurodevelopment.
+
+### What are the control and test conditions of the dataset? {.unnumbered}
+The control condition consists of neural progenitor cells (NPCs) derived from human embryonic stem cells with intact UPF3B expression (Ctrl). The test condition consists of NPCs in which UPF3B has been knocked out (UPF3B_KO). Comparing these two conditions allows the assessment of how UPF3B loss affects gene expression and NMD sensitivity in NPCs.
+
+### How many samples in each of the conditions of your dataset? {.unnumbered}
+There are six biological replicates for each condition in this dataset, with six Ctrl samples and six UPF3B_KO samples, providing sufficient replication to assess differential gene expression reliably.
+
+### Were there expression values that were not unique for specific genes? How did you handle these? {.unnumbered}
+Yes. For genes mapping to multiple HGNC symbols, only one representative symbol was retained, and if an HGNC symbol corresponded to multiple Ensembl IDs, only the first ID was kept.
+
+### Were there expression values that could not be mapped to current HUGO symbols? {.unnumbered}
+Of the 43,884 original genes, 31,282 were successfully mapped to HGNC symbols. Genes without an HGNC symbol (N = 12602) were removed.
+
+### Were there any outliers in your dataset? How were they handled in the originating paper? How many outliers were removed? {.unnumbered}
+No extreme outliers were detected in the dataset after initial quality control and low-expression filtering. In the originating study, standard quality control procedures were applied to remove samples or genes with abnormal expression patterns, although specific numbers of removed outliers were not reported.
+
+### How did you handle replicates? {.unnumbered}
+All biological replicates were retained for analysis. Each condition (Ctrl and UPF3B_KO) included six replicates, and they were treated as independent samples in the model design for differential expression analysis. Replicate consistency was confirmed using exploratory visualizations such as boxplots, density plots, and MDS, ensuring that variation within replicates was smaller than variation between conditions.
+
+### What is the final coverage of your dataset? {.unnumbered}
+The dataset underwent several processing steps. Of the 43,884 original genes, 31,282 (71.3%) were successfully mapped to HGNC symbols. After removing lowly expressed genes, 15,630 genes (35.6% of the original set) were retained for downstream differential expression analysis. This final coverage represents the genes reliably measured and suitable for statistical testing.
+
+# Link to journal entry
+A1 journal entry could be found [here](https://github.com/bcb420-2026/Feiyang_Sun/wiki/Assignment-1)
+
+# References
+
