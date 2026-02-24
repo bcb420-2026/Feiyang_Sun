@@ -8,3 +8,4 @@ Rendered books for exercises are listed here:
 
 [Using GEOmetadb](https://bcb420-2026.github.io/Feiyang_Sun/in_class_exercises/using_geometadb/docs/)
 
+[ID mapping](https://bcb420-2026.github.io/Feiyang_Sun/in_class_exercises/id_mapping/docs/)
