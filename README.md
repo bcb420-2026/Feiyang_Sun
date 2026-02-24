@@ -4,3 +4,6 @@ repo for bcb420 for Feiyang Sun
 
 [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html) can be accessed here as a html file.
 
+Rendered books for exercises are listed here:
+[Using GEOmetadb](https://bcb420-2026.github.io/Feiyang_Sun/in_class_exercises/using_geometadb/docs/)
+
