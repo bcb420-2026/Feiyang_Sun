@@ -11,3 +11,5 @@ Rendered books for exercises are listed here:
 [ID mapping](https://bcb420-2026.github.io/Feiyang_Sun/in_class_exercises/id_mapping/docs/)
 
 [Normalization](https://bcb420-2026.github.io/Feiyang_Sun/in_class_exercises/normalization/docs/)
+
+[Differential expression](https://bcb420-2026.github.io/Feiyang_Sun/in_class_exercises/differential_expression/docs/)
