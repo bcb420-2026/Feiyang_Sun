@@ -123,6 +123,7 @@ cat("All significant genes:", length(all_genes_names),
 ```
 
 ## ORA methods and process
+Our analysis workflow was adapted from the CBW Pathway Workshop framework  [@Isserlin2024], with several adjustments and customizations applied to suit the specific needs of this study.
 
 ### Parameters
 **Data source selection:**
@@ -155,9 +156,12 @@ sources_lst <- c("GO:BP",    # Gene Ontology - Biological Process
                  "REAC"      # Reactome Pathways
                  )
 
+upreg_lst <- list("Up-regulated Genes" = up_genes_names)
+downreg_lst <- list("Down-regulated Genes" = down_genes_names)
+
 # Thresholded ORA on up-regulated genes
 upreg_ora <- gost(
-  query = up_genes_names,   # focus on upregulated genes
+  query = upreg_lst,        # focus on upregulated genes
   sources = sources_lst,    # restricted to these sources
   organism = "hsapiens",    # focus on pathways in human
   correction_method = "fdr",# False Discovery Rate (Benjamini-Hochberg Method)
@@ -168,7 +172,7 @@ upreg_ora <- gost(
 
 # Thresholded ORA on down-regulated genes
 downreg_ora <- gost(
-  query = down_genes_names,
+  query = downreg_lst,
   sources = sources_lst,
   organism = "hsapiens",
   correction_method = "fdr",
@@ -181,7 +185,9 @@ downreg_ora <- gost(
 
 ### Visualization using Manhattan plots
 
-```{r visalization}
+Here we visualize the functional enrichment results of up- and down-regulated genes using Manhattan plots. Each point represents a significantly enriched term from **GO-BP**, **GO-CC**, **KEGG**, or **REAC** (Reactome), with the y-axis showing -log10(FDR). The `patchwork` package [@patchwork] is used to arrange the up- and down-regulated plots stacked for easy comparison.
+
+```{r Manhattan plots visalization}
 if(!requireNamespace("patchwork", quietly = TRUE)) {
   install.packages("patchwork")
 }
@@ -203,8 +209,59 @@ p_down <- gostplot(
 p_up / p_down
 ```
 
+**Figure 1. Manhattan plots showing enriched biological processes and pathways for up-regulated (top) and down-regulated (bottom) genes in human neural progenitor cells (NPC).** The analyzed genes represent those potentially regulated by UPF3B, identified through differential expression analysis between UPF3B-KO and Ctrl samples. ORA was performed using *GO-BP*, *GO-CC*, *KEGG*, and *REAC* Reactome databases with FDR < 0.05, excluding electronically inferred annotations (IEA). Each point represents a significantly enriched term, with the y-axis showing -log10(FDR).
+
 ## Extract results
 
+### Filtering results according to thresholds
+
+To improve the robustness of enrichment results, pathway terms were filtered using predefined thresholds. Gene sets with fewer than 5 or more than 500 genes were excluded, and only terms with an intersection size of at least 2 genes with the query list were retained. After applying these criteria, 73 significantly enriched pathways were identified for the up-regulated gene set and 388 for the down-regulated gene set.
+
+```{r ORA result}
+# extract the results dataframe for up- and down-regulated genes
+# set thresholds
+min_gs_size = 5
+max_gs_size = 500    # adjust to improve robustness of enrichment results
+min_intersec = 2
+
+# apply filtering thresholds on term sizes
+up_result_filtered <- upreg_ora$result %>%
+  filter(term_size >= min_gs_size, 
+         term_size <= max_gs_size,
+         intersection_size >= min_intersec)
+down_result_filtered <- downreg_ora$result %>%
+  filter(term_size >= min_gs_size, 
+         term_size <= max_gs_size,
+         intersection_size >= min_intersec)
+
+# message
+up_pathways <- nrow(up_result_filtered)
+down_pathways <- nrow(down_result_filtered)
+cat("Significant up-regulated pathways:", up_pathways,
+    "\nSignificant down-regulated pathways:", down_pathways) 
+```
+
+### Top 10 up-regulated pathways
+```{r result tables}
+# keep only columns needed (avoiding list columns)
+keep_cols <- c("term_id", "term_name",
+               "p_value", "term_size", "intersection_size")
+up_subset <- up_result_filtered[, keep_cols]
+
+# select top 10
+up_top10 <- up_subset %>%
+  arrange(p_value) %>%
+  slice(1:10)
+
+# modify p_value format
+up_top10$p_value <- formatC(up_top10$p_value, format = "e", digits = 2)
+
+# render table of top 10
+knitr::kable(up_top10, 
+             row.names = FALSE, 
+             format = "html",
+             caption = "Top 10 significantly up-regulated functional terms/pathways")
+```
 
 
 # Non-thresholded gene set enrichment analysis
