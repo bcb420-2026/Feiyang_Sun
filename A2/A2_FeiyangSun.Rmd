@@ -1,0 +1,36 @@
+---
+title: "BCB420 Assignment 2"
+author: "Feiyang Sun"
+date: "2026-03-10"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
+    number_sections: true
+    theme: cerulean
+    highlight: tango
+    fig_caption: true
+    df_print: paged 
+    code_folding: hide
+bibliography: A2_references.bib
+csl: apa.csl
+nocite: '@*'
+link-citations: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+# Introduction
+
+## Dataset selection and information
+
+
+
+
+# Link to journal entry
+A2 journal entry could be found [here](https://github.com/bcb420-2026/Feiyang_Sun/wiki/Assignment-2).
+
+# References
