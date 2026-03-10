@@ -379,7 +379,7 @@ Additionally, NMD has been shown to regulate synaptic receptor composition and p
 
 For the non-thresholded gene set enrichment analysis (GSEA), we selected the newest released `.gmt` file **Human_GO_AllPathways_noPFOCR_no_GO_iea_September_01_2025_symbol.gmt"** from BaderLab Gene Sets [@BaderLab_GeneSets]. 
 
-> Note: Firstly, I attempted to use the current release version (Mar. 02, 2026); however, errors occurred when loading the GMT file in the GSEA application due to duplicate gene set names. Therefore, an alternative gene set collection without duplicate pathway names was used for the subsequent analysis.
+*Note:* Firstly, I attempted to use the current release version (Mar. 02, 2026); however, errors occurred when loading the GMT file in the GSEA application due to duplicate gene set names. Therefore, an alternative gene set collection without duplicate pathway names was used for the subsequent analysis.
 
 This file contains all Gene Ontology (GO) pathways across biological processes, molecular functions, and cellular components, represented by gene symbols. We specifically chose the version without parent–child overlap correction (noPFOCR) to retain the full hierarchical structure of GO terms, and without IEA (Inferred from Electronic Annotation) evidence to ensure high-confidence annotations. This selection balances comprehensive coverage of relevant GO pathways with reliable, experimentally supported gene annotations, enhancing the interpretability of the enrichment results.
 
@@ -450,7 +450,7 @@ paged_table(ranked_genes[1:10, ] )
 
 ```
 
-**Table 5. Gene rank, calculated as the sign of the log2 fold-change multiplied by the negative log10 of the FDR.** Positive values indicate genes up-regulated in the condition of interest, while negative values indicate down-regulated genes. For clarity, only the first 10 rows and first 10 columns are shown.
+**Table 5. Gene rank, calculated as the sign of the log2 fold-change multiplied by the negative log10 of the FDR.** Positive values indicate genes up-regulated in the condition of interest (UPF3B-KO), while negative values indicate down-regulated genes. For clarity, only the first 10 rows and first 10 columns are shown.
 
 ## GSEA process
 Our analysis workflow was adapted from the CBW Pathway Workshop framework  [@Isserlin2024], with several adjustments and customizations applied to suit the specific needs of this study. The process was performed using the GSEA desktop software.
@@ -474,6 +474,47 @@ Our analysis workflow was adapted from the CBW Pathway Workshop framework  [@Iss
 ![Scree shot for GSEA parameters](figure/GSEA_parameters.png)
 
 **Figure 2. Screenshot of the parameter settings used for the GSEA analysis.** The interface displays key configuration options including the number of permutations, selection of the ranked gene list file, and the option to disable gene symbol remapping since the ranked list already contains gene symbols. Additional settings shown include the specification of an analysis name to label the output directory, adjustment of gene set size filters to exclude excessively large or small pathways, and selection of the output directory where GSEA saves the analysis results.
+
+### Results
+
+In this gene set enrichment analysis (GSEA), genes were ranked such that positive values indicate up-regulation in the condition of interest (e.g., **UPF3B-KO**), while negative values indicate down-regulation. Accordingly, GSEA reports enrichment separately for the positive and negative ends of the ranked list. 
+
+The `na_pos` category represents gene sets that are significantly enriched among genes up-regulated in **UPF3B-KO**, reflecting pathways more active in the experimental condition. In contrast, the `na_neg` category represents gene sets enriched among genes down-regulated in **UPF3B-KO** (or relatively active in the **Ctrl** condition). In the current analysis, 2,488 gene sets were up-regulated in `na_pos`, with 162 reaching FDR < 25% and 157 reaching nominal p-value < 1%, whereas 5,269 gene sets were up-regulated in `na_neg`, with 1,718 reaching FDR < 25% and 835 reaching nominal p-value < 1%. These results indicate that a substantial number of pathways are either activated or repressed in **UPF3B-KO**, providing insights into the biological processes associated with the experimental condition.
+
+<br>
+
+![Scree shot for GSEA parameters](figure/GSEA_res.png)
+
+**Figure 3. Screenshot of GSEA result overview.** The top part (`na_pos`) denote up-regulation in **UPF3B-KO** samples, while the bottom part (`na_neg`) denote down-regulation in **UPF3B-KO**samples. A snapshot of the enrichment results provides an overview, while detailed results are available in both HTML and tab-delimited (TSV) formats. These results allow for further interpretation of the biological pathways and processes associated with the `na_neg` phenotype.
+
+<br>
+
+![Scree shot for Top 20 up-regulated pathways](figure/up_reg.png)
+
+**Figure 4. Top 20 up-regulated pathways.** These up-regulated gene sets (in **UPF3B-KO**) are primarily associated with *mitochondrial function* and *energy metabolism*, including pathways for mitochondrial translation, respiratory chain assembly, oxidative phosphorylation, and aerobic respiration. Some pathways also involve *glycolysis*, fatty acid catabolism, and cellular transport, indicating coordinated up-regulation of both mitochondrial and cytosolic metabolic processes. Overall, these results suggest enhanced cellular bio-energetics and metabolic activity in the condition of interest.
+
+<br>
+
+![Scree shot for Top 20 down-regulated pathways](figure/down_reg.png)
+
+**Figure 5. Top 20 down-regulated pathways.** The top 20 down-regulated gene sets (in **UPF3B-KO**) are primarily associated with *extracellular matrix structure*, organization, and cell adhesion, including collagen fibril organization, cadherin signaling, and integrin-mediated pathways. Several pathways also involve Wnt and SMAD signaling, which regulate cell proliferation, differentiation, and tissue morphogenesis. Overall, these results suggest that the condition of interest (**UPF3B-KO**) is linked to reduced *extra-cellular matrix activity* and *altered developmental signaling*.
+
+## Interpretation of results
+
+### Comparison to Thresholded Analysis (ORA)
+
+ORA (threshold-based) focuses only on genes passing specific significance cutoffs, whereas GSEA evaluates the entire ranked gene list, allowing even modest but coordinated changes to contribute to pathway enrichment. As a result, GSEA identified substantially more significant gene sets than ORA, with 363 and 1,483 gene sets reaching FDR < 5% in the `na_pos` (up-regulated in **UPF3B-KO**) and `na_neg` (down-regulated in **UPF3B-KO**) directions, far exceeding the number of significant pathways detected by ORA (73 up-regulated and 388 down-regulated pathways). This illustrates that GSEA is more sensitive to subtle but coordinated transcriptional changes, whereas ORA emphasizes pathways driven by strong, threshold-passing gene expression differences.
+
+### Qualitative similarities
+
+Despite methodological differences, GSEA and ORA highlight consistent biological themes. Both analyses point to **strong down-regulation of extracellular matrix (ECM)** and **neural differentiation pathways**, and **up-regulation of synaptic signaling** and **neurotransmitter receptor complexes** in UPF3B knockout samples. The convergence of these findings reinforces the conclusion that UPF3B selectively impacts neural transcript stability and ECM-related processes, supporting observations from previous studies [@Alrahbeni2015; @Chamieh2008].
+
+### Qualitative Differences and Interpretation Challenges
+
+Direct, quantitative comparison between ORA and GSEA is not straightforward due to their different underlying principles. ORA relies on a predefined significance cutoff, potentially *overlooking* pathways influenced by moderate but coordinated gene expression changes. 
+
+GSEA, in contrast, uses rank-based enrichment scores, capturing cumulative effects across the gene list and revealing additional pathways with smaller individual gene effects. As a result, GSEA often reports *more extensive pathway enrichment*, providing a broader perspective on transcriptional changes that may be missed in threshold-based ORA. Comparisons between the two methods are therefore qualitative, focusing on convergent biological patterns rather than exact overlaps in pathway lists.
+
 
 # Visualize gene set enrichment analysis in Cytoscape
 
