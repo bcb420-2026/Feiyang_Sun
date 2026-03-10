@@ -25,7 +25,25 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 # Introduction
 
-## Dataset selection and information
+In [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html), I selected the RNA-seq dataset from a study investigating how nonsense-mediated RNA decay is regulated in a cell type-specific manner during human neural development  [@karousis_nonsense-mediated_2016].
+
+## Dataset information
+The dataset used in this analysis is GEO accession: **GSE263406**, a publicly available RNA sequencing dataset generated from Homo sapiens cells and released on May 21, 2025. This study [@tan_cell_2025] investigates the role of nonsense-mediated RNA decay (NMD), a conserved RNA quality-control pathway that regulates the stability and turnover of messenger RNAs. NMD plays an important role in gene expression regulation and is involved in multiple biological processes, including development and disease. The dataset focuses on identifying RNAs targeted by the NMD factor UPF3B [@Kadlec2004] during neural differentiation. 
+
+Specifically, bulk RNA-seq was performed on neural progenitor cells (NPCs) differentiated from human embryonic stem cells (hESCs). The experimental design compares two groups: a **control (Ctrl)** group and a **UPF3B knockout (UPF3B-KO)** group. By comparing gene expression profiles between these groups, the study aims to identify transcripts whose stability or abundance is affected by the loss of UPF3B. This dataset provides insight into how NMD sensitivity can change depending on cellular context [@Buchwald2010], particularly during the transition from pluripotent stem cells to neural progenitor cells, and helps reveal how RNA-binding proteins may contribute to cell type-specific regulation of RNA decay.
+
+The full dataset (after simple filtering) contains 43884 genes and 12 samples: <br> - **(Ctrl_1-6)**: six control replicates where the UPF3B gene is intact and expressed. <br>
+- **(UPF3B.KO_1-6)**: six replicates where UPF3B gene has been genetically disrupted (knockout).
+
+## Dataset processing
+The bulk mRNA-seq dataset used in this analysis was obtained from GEO and accessed via the GEOquery package in R. Genes with no expression across all samples were removed, leaving 43,884 genes across 12 samples. Library sizes were visualized to assess sample consistency, and Ensembl gene IDs were mapped to HGNC symbols using the `biomaRt` package [@biomaRt], resulting in 31,282 successfully annotated genes. Lowly expressed genes were filtered with `edgeR`’s *filterByExpr()* [@edgeR], retaining **19,197** genes for downstream analysis.
+
+Normalization was performed using the TMM (Trimmed Mean of M-values) method [@robinson_scaling_2010] to adjust for differences in library size and sequencing depth, assuming most genes are not differentially expressed. Raw count distributions were evaluated using log2-transformed boxplots and density plots, which highlighted potential outliers and confirmed consistency across replicates. Post-normalization comparisons showed improved uniformity in expression distributions, preparing the dataset for subsequent differential expression analysis.
+
+## Differential Expression Analysis
+Differential expression analysis of TMM-normalized log2 CPM values showed clear separation between control and UPF3B knockout NPC samples in multidimensional scaling plots. The BCV plot indicated low variability among replicates (common dispersion ~0.1). 
+
+Using an **FDR cutoff of 0.05** and applying an additional threshold of **|log2FC| > 1** yielded 1209 high-confidence genes. UPF3B knockout led to more down-regulated genes (n = 727) than up-regulated (n = 482), suggesting a primarily positive regulatory role in NPCs and highlighting its cell type-specific effects. [Volcano plot.](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html#volcano-plot)
 
 
 
