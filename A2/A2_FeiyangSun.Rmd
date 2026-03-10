@@ -245,7 +245,7 @@ cat("Significant up-regulated pathways:", up_pathways,
 ```{r result tables}
 # keep only columns needed (avoiding list columns)
 keep_cols <- c("term_id", "term_name",
-               "p_value", "term_size", "intersection_size")
+               "p_value", "intersection_size")
 up_subset <- up_result_filtered[, keep_cols]
 
 # select top 10

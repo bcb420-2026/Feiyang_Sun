@@ -3180,7 +3180,7 @@ cat(&quot;Significant up-regulated pathways:&quot;, up_pathways,
 pathways</h3>
 <pre class="r"><code># keep only columns needed (avoiding list columns)
 keep_cols &lt;- c(&quot;term_id&quot;, &quot;term_name&quot;,
-               &quot;p_value&quot;, &quot;term_size&quot;, &quot;intersection_size&quot;)
+               &quot;p_value&quot;, &quot;intersection_size&quot;)
 up_subset &lt;- up_result_filtered[, keep_cols]
 
 # select top 10
@@ -3212,9 +3212,6 @@ term_name
 p_value
 </th>
 <th style="text-align:right;">
-term_size
-</th>
-<th style="text-align:right;">
 intersection_size
 </th>
 </tr>
@@ -3231,9 +3228,6 @@ Neuroactive ligand-receptor interaction
 5.30e-06
 </td>
 <td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
 21
 </td>
 </tr>
@@ -3246,9 +3240,6 @@ GPCR ligand binding
 </td>
 <td style="text-align:left;">
 8.21e-04
-</td>
-<td style="text-align:right;">
-460
 </td>
 <td style="text-align:right;">
 22
@@ -3265,9 +3256,6 @@ Calcium signaling pathway
 1.03e-03
 </td>
 <td style="text-align:right;">
-251
-</td>
-<td style="text-align:right;">
 14
 </td>
 </tr>
@@ -3280,9 +3268,6 @@ G alpha (q) signalling events
 </td>
 <td style="text-align:left;">
 1.05e-03
-</td>
-<td style="text-align:right;">
-212
 </td>
 <td style="text-align:right;">
 14
@@ -3299,9 +3284,6 @@ phospholipase C-activating G protein-coupled receptor signaling pathway
 3.73e-03
 </td>
 <td style="text-align:right;">
-118
-</td>
-<td style="text-align:right;">
 10
 </td>
 </tr>
@@ -3314,9 +3296,6 @@ tissue morphogenesis
 </td>
 <td style="text-align:left;">
 3.73e-03
-</td>
-<td style="text-align:right;">
-331
 </td>
 <td style="text-align:right;">
 17
@@ -3333,9 +3312,6 @@ gland development
 3.73e-03
 </td>
 <td style="text-align:right;">
-144
-</td>
-<td style="text-align:right;">
 11
 </td>
 </tr>
@@ -3348,9 +3324,6 @@ hematopoietic or lymphoid organ development
 </td>
 <td style="text-align:left;">
 3.73e-03
-</td>
-<td style="text-align:right;">
-31
 </td>
 <td style="text-align:right;">
 6
@@ -3367,9 +3340,6 @@ regulation of positive chemotaxis
 3.73e-03
 </td>
 <td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
 5
 </td>
 </tr>
@@ -3382,9 +3352,6 @@ positive chemotaxis
 </td>
 <td style="text-align:left;">
 5.12e-03
-</td>
-<td style="text-align:right;">
-38
 </td>
 <td style="text-align:right;">
 6
