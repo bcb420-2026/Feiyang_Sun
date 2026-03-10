@@ -243,9 +243,14 @@ cat("Significant up-regulated pathways:", up_pathways,
 
 ### Top 10 up-regulated pathways
 ```{r result tables}
+if(!requireNamespace("kableExtra", quietly = TRUE)) {
+  install.packages("kableExtra")
+}
+library(kableExtra)
+
 # keep only columns needed (avoiding list columns)
 keep_cols <- c("term_id", "term_name",
-               "p_value", "intersection_size")
+               "p_value", "term_size", "intersection_size")
 up_subset <- up_result_filtered[, keep_cols]
 
 # select top 10
@@ -260,7 +265,11 @@ up_top10$p_value <- formatC(up_top10$p_value, format = "e", digits = 2)
 knitr::kable(up_top10, 
              row.names = FALSE, 
              format = "html",
-             caption = "Top 10 significantly up-regulated functional terms/pathways")
+             caption = "Top 10 significantly up-regulated functional terms/pathways") %>% 
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    full_width = FALSE) %>%
+  column_spec(2, width = "30em")
 ```
 
 

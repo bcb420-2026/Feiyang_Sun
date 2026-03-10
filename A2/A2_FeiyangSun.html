@@ -2644,6 +2644,230 @@ window.onload = function() {
   PagedTableDoc.initAll();
 };
 </script>
+<script>$(document).ready(function(){
+    if (typeof $('[data-toggle="tooltip"]').tooltip === 'function') {
+        $('[data-toggle="tooltip"]').tooltip();
+    }
+    if ($('[data-toggle="popover"]').popover === 'function') {
+        $('[data-toggle="popover"]').popover();
+    }
+});
+</script>
+<style type="text/css">
+.lightable-minimal {
+border-collapse: separate;
+border-spacing: 16px 1px;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-minimal td {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal th {
+margin-left: 5px;
+margin-right: 5px;
+}
+.lightable-minimal thead tr:last-child th {
+border-bottom: 2px solid #00000050;
+empty-cells: hide;
+}
+.lightable-minimal tbody tr:first-child td {
+padding-top: 0.5em;
+}
+.lightable-minimal.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-minimal.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic {
+border-top: 0.16em solid #111111;
+border-bottom: 0.16em solid #111111;
+width: 100%;
+margin-bottom: 10px;
+margin: 10px 5px;
+}
+.lightable-classic tfoot tr td {
+border: 0;
+}
+.lightable-classic tfoot tr:first-child td {
+border-top: 0.14em solid #111111;
+}
+.lightable-classic caption {
+color: #222222;
+}
+.lightable-classic td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic thead tr:last-child th {
+border-bottom: 0.10em solid #111111;
+}
+.lightable-classic.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-classic-2 {
+border-top: 3px double #111111;
+border-bottom: 3px double #111111;
+width: 100%;
+margin-bottom: 10px;
+}
+.lightable-classic-2 tfoot tr td {
+border: 0;
+}
+.lightable-classic-2 tfoot tr:first-child td {
+border-top: 3px double #111111;
+}
+.lightable-classic-2 caption {
+color: #222222;
+}
+.lightable-classic-2 td {
+padding-left: 5px;
+padding-right: 5px;
+color: #222222;
+}
+.lightable-classic-2 th {
+padding-left: 5px;
+padding-right: 5px;
+font-weight: normal;
+color: #222222;
+}
+.lightable-classic-2 tbody tr:last-child td {
+border-bottom: 3px double #111111;
+}
+.lightable-classic-2 thead tr:last-child th {
+border-bottom: 1px solid #111111;
+}
+.lightable-classic-2.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-classic-2.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #EEE;
+border-collapse: collapse;
+margin-bottom: 10px;
+}
+.lightable-material tfoot tr td {
+border: 0;
+}
+.lightable-material tfoot tr:first-child td {
+border-top: 1px solid #EEE;
+}
+.lightable-material th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+}
+.lightable-material td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+border-top: 1px solid #eeeeee;
+}
+.lightable-material.lightable-hover tbody tr:hover {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody tr:nth-child(even) {
+background-color: #f5f5f5;
+}
+.lightable-material.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #ddd;
+}
+.lightable-material-dark {
+min-width: 100%;
+white-space: nowrap;
+table-layout: fixed;
+font-family: Roboto, sans-serif;
+border: 1px solid #FFFFFF12;
+border-collapse: collapse;
+margin-bottom: 10px;
+background-color: #363640;
+}
+.lightable-material-dark tfoot tr td {
+border: 0;
+}
+.lightable-material-dark tfoot tr:first-child td {
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark th {
+height: 56px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF60;
+}
+.lightable-material-dark td {
+height: 52px;
+padding-left: 16px;
+padding-right: 16px;
+color: #FFFFFF;
+border-top: 1px solid #FFFFFF12;
+}
+.lightable-material-dark.lightable-hover tbody tr:hover {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody tr:nth-child(even) {
+background-color: #FFFFFF12;
+}
+.lightable-material-dark.lightable-striped tbody td {
+border: 0;
+}
+.lightable-material-dark.lightable-striped thead tr:last-child th {
+border-bottom: 1px solid #FFFFFF12;
+}
+.lightable-paper {
+width: 100%;
+margin-bottom: 10px;
+color: #444;
+}
+.lightable-paper tfoot tr td {
+border: 0;
+}
+.lightable-paper tfoot tr:first-child td {
+border-top: 1px solid #00000020;
+}
+.lightable-paper thead tr:last-child th {
+color: #666;
+vertical-align: bottom;
+border-bottom: 1px solid #00000020;
+line-height: 1.15em;
+padding: 10px 5px;
+}
+.lightable-paper td {
+vertical-align: middle;
+border-bottom: 1px solid #00000010;
+line-height: 1.15em;
+padding: 7px 5px;
+}
+.lightable-paper.lightable-hover tbody tr:hover {
+background-color: #F9EEC1;
+}
+.lightable-paper.lightable-striped tbody tr:nth-child(even) {
+background-color: #00000008;
+}
+.lightable-paper.lightable-striped tbody td {
+border: 0;
+}
+</style>
 
 <style type="text/css">
 code{white-space: pre-wrap;}
@@ -3178,9 +3402,14 @@ cat(&quot;Significant up-regulated pathways:&quot;, up_pathways,
 <div id="top-10-up-regulated-pathways" class="section level3" number="2.3.2">
 <h3><span class="header-section-number">2.3.2</span> Top 10 up-regulated
 pathways</h3>
-<pre class="r"><code># keep only columns needed (avoiding list columns)
+<pre class="r"><code>if(!requireNamespace(&quot;kableExtra&quot;, quietly = TRUE)) {
+  install.packages(&quot;kableExtra&quot;)
+}
+library(kableExtra)
+
+# keep only columns needed (avoiding list columns)
 keep_cols &lt;- c(&quot;term_id&quot;, &quot;term_name&quot;,
-               &quot;p_value&quot;, &quot;intersection_size&quot;)
+               &quot;p_value&quot;, &quot;term_size&quot;, &quot;intersection_size&quot;)
 up_subset &lt;- up_result_filtered[, keep_cols]
 
 # select top 10
@@ -3195,8 +3424,12 @@ up_top10$p_value &lt;- formatC(up_top10$p_value, format = &quot;e&quot;, digits 
 knitr::kable(up_top10, 
              row.names = FALSE, 
              format = &quot;html&quot;,
-             caption = &quot;Top 10 significantly up-regulated functional terms/pathways&quot;)</code></pre>
-<table>
+             caption = &quot;Top 10 significantly up-regulated functional terms/pathways&quot;) %&gt;% 
+  kable_styling(
+    bootstrap_options = c(&quot;striped&quot;, &quot;condensed&quot;),
+    full_width = FALSE) %&gt;%
+  column_spec(2, width = &quot;30em&quot;)</code></pre>
+<table class="table table-striped table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
 Top 10 significantly up-regulated functional terms/pathways
 </caption>
@@ -3212,6 +3445,9 @@ term_name
 p_value
 </th>
 <th style="text-align:right;">
+term_size
+</th>
+<th style="text-align:right;">
 intersection_size
 </th>
 </tr>
@@ -3221,11 +3457,14 @@ intersection_size
 <td style="text-align:left;">
 KEGG:04080
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 Neuroactive ligand-receptor interaction
 </td>
 <td style="text-align:left;">
 5.30e-06
+</td>
+<td style="text-align:right;">
+365
 </td>
 <td style="text-align:right;">
 21
@@ -3235,11 +3474,14 @@ Neuroactive ligand-receptor interaction
 <td style="text-align:left;">
 REAC:R-HSA-500792
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 GPCR ligand binding
 </td>
 <td style="text-align:left;">
 8.21e-04
+</td>
+<td style="text-align:right;">
+460
 </td>
 <td style="text-align:right;">
 22
@@ -3249,11 +3491,14 @@ GPCR ligand binding
 <td style="text-align:left;">
 KEGG:04020
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 Calcium signaling pathway
 </td>
 <td style="text-align:left;">
 1.03e-03
+</td>
+<td style="text-align:right;">
+251
 </td>
 <td style="text-align:right;">
 14
@@ -3263,11 +3508,14 @@ Calcium signaling pathway
 <td style="text-align:left;">
 REAC:R-HSA-416476
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 G alpha (q) signalling events
 </td>
 <td style="text-align:left;">
 1.05e-03
+</td>
+<td style="text-align:right;">
+212
 </td>
 <td style="text-align:right;">
 14
@@ -3277,11 +3525,14 @@ G alpha (q) signalling events
 <td style="text-align:left;">
 <a href="GO:0007200" class="uri">GO:0007200</a>
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 phospholipase C-activating G protein-coupled receptor signaling pathway
 </td>
 <td style="text-align:left;">
 3.73e-03
+</td>
+<td style="text-align:right;">
+118
 </td>
 <td style="text-align:right;">
 10
@@ -3291,11 +3542,14 @@ phospholipase C-activating G protein-coupled receptor signaling pathway
 <td style="text-align:left;">
 <a href="GO:0048729" class="uri">GO:0048729</a>
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 tissue morphogenesis
 </td>
 <td style="text-align:left;">
 3.73e-03
+</td>
+<td style="text-align:right;">
+331
 </td>
 <td style="text-align:right;">
 17
@@ -3305,11 +3559,14 @@ tissue morphogenesis
 <td style="text-align:left;">
 <a href="GO:0048732" class="uri">GO:0048732</a>
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 gland development
 </td>
 <td style="text-align:left;">
 3.73e-03
+</td>
+<td style="text-align:right;">
+144
 </td>
 <td style="text-align:right;">
 11
@@ -3319,11 +3576,14 @@ gland development
 <td style="text-align:left;">
 <a href="GO:0048534" class="uri">GO:0048534</a>
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 hematopoietic or lymphoid organ development
 </td>
 <td style="text-align:left;">
 3.73e-03
+</td>
+<td style="text-align:right;">
+31
 </td>
 <td style="text-align:right;">
 6
@@ -3333,11 +3593,14 @@ hematopoietic or lymphoid organ development
 <td style="text-align:left;">
 <a href="GO:0050926" class="uri">GO:0050926</a>
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 regulation of positive chemotaxis
 </td>
 <td style="text-align:left;">
 3.73e-03
+</td>
+<td style="text-align:right;">
+19
 </td>
 <td style="text-align:right;">
 5
@@ -3347,11 +3610,14 @@ regulation of positive chemotaxis
 <td style="text-align:left;">
 <a href="GO:0050918" class="uri">GO:0050918</a>
 </td>
-<td style="text-align:left;">
+<td style="text-align:left;width: 30em; ">
 positive chemotaxis
 </td>
 <td style="text-align:left;">
 5.12e-03
+</td>
+<td style="text-align:right;">
+38
 </td>
 <td style="text-align:right;">
 6
