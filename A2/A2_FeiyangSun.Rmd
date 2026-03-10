@@ -65,7 +65,7 @@ library(ggplot2)
 
 # Introduction
 
-In [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html), I selected the RNA-seq dataset from a study investigating how nonsense-mediated RNA decay is regulated in a cell type-specific manner during human neural development  [@karousis_nonsense-mediated_2016].
+In [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html), I selected the RNA-seq dataset from a study [@tan_cell_2025] investigating how nonsense-mediated RNA decay is regulated in a cell type-specific manner during human neural development  [@karousis_nonsense-mediated_2016].
 
 ## Dataset information
 The dataset used in this analysis is GEO accession: **GSE263406**, a publicly available RNA sequencing dataset generated from Homo sapiens cells and released on May 21, 2025. This study [@tan_cell_2025] investigates the role of nonsense-mediated RNA decay (NMD), a conserved RNA quality-control pathway that regulates the stability and turnover of messenger RNAs. NMD plays an important role in gene expression regulation and is involved in multiple biological processes, including development and disease. The dataset focuses on identifying RNAs targeted by the NMD factor UPF3B [@Kadlec2004] during neural differentiation. 
@@ -250,7 +250,7 @@ library(kableExtra)
 
 # keep only columns needed (avoiding list columns)
 keep_cols <- c("term_id", "term_name",
-               "p_value", "term_size", "intersection_size")
+               "p_value", "intersection_size")
 up_subset <- up_result_filtered[, keep_cols]
 
 # select top 10
@@ -272,6 +272,106 @@ knitr::kable(up_top10,
   column_spec(2, width = "30em")
 ```
 
+**Table 1. Top 10 significantly enriched functional terms and pathways for up-regulated genes.** Terms were filtered by gene set size (5-500 genes) and minimum intersection size (>=2 genes), and ranked by p-value.
+
+### Top 10 down-regulated pathways
+```{r}
+library(kableExtra)
+
+down_subset <- down_result_filtered[, keep_cols]
+
+# select top 10
+down_top10 <- down_subset %>%
+  arrange(p_value) %>%
+  slice(1:10)
+
+# modify p_value format
+down_top10$p_value <- formatC(down_top10$p_value, format = "e", digits = 2)
+
+# render table of top 10
+knitr::kable(down_top10, 
+             row.names = FALSE, 
+             format = "html",
+             caption = "Top 10 significantly down-regulated functional terms/pathways") %>% 
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    full_width = FALSE) %>%
+  column_spec(2, width = "30em")
+
+```
+
+**Table 2. Top 10 significantly enriched functional terms and pathways for down-regulated genes.** Terms were filtered by gene set size (5-500 genes) and minimum intersection size (>=2 genes), and ranked by p-value.
+
+## Interpretation of results
+
+Here in this assignment, *up-regulated* genes refer to those with higher expression in the **UPF3B-KO** (knockout) group compared with the **Ctrl** (control) group, while *down-regulated* genes have lower expression in the **UPF3B-KO** group.
+
+```{r interpretation ORA}
+if(!requireNamespace("stringr", quietly = TRUE)) {
+  install.packages("stringr")
+}
+library(dplyr)
+library(stringr)
+
+# try searching terms/pathways related to neuro-development
+up_neuro_terms <- up_subset %>%
+  filter(str_detect(term_name, regex("neuro", ignore_case = TRUE))) %>% 
+  arrange(p_value)
+down_neuro_terms <- down_subset %>%
+  filter(str_detect(term_name, regex("neuro", ignore_case = TRUE))) %>% 
+  arrange(p_value)
+
+```
+
+### Summary of ORA Results
+
+ORA was conducted separately for up-regulated and down-regulated genes in the UPF3B knockout versus control samples, with terms filtered by gene set size (5-500 genes) and a minimum intersection size of 2 genes. Using these criteria, **73** pathways were found to be significantly enriched among up-regulated genes, whereas **388** pathways were significantly enriched among down-regulated genes, reflecting a broader and more pronounced effect on gene repression than activation. 
+
+Notably, the down-regulated pathways included a substantial number of extra-cellular matrix (ECM) and vascular-related processes (as shown in **Table 2.**), such as extra-cellular matrix organization, collagen-containing ECM, blood vessel development, and circulatory system processes. 
+
+In addition, neural-related pathways, including neuron projection, dopaminergic neuron differentiation, and regulation of neurogenesis, were significantly down-regulated (as shown in **Table 4.**). Up-regulated pathways were enriched for neurotransmitter receptor complexes and synaptic signaling, suggesting selective transcript accumulation. Overall, these results indicate that UPF3B knockout affects diverse biological processes in a pathway-specific manner, with particularly strong effects on both **neural and extra-cellular matrix-related functions**.
+
+```{r up_neuro_terms}
+library(kableExtra)
+knitr::kable(up_neuro_terms, 
+             row.names = FALSE, 
+             format = "html",
+             caption = "up-regulated neural-related pathways/functional terms") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    full_width = FALSE) %>%
+  column_spec(2, width = "30em")
+
+```
+
+**Table 3. ORA of up-regulated genes in UPF3B knockout samples highlighting neural-related pathways.** The table lists significantly enriched terms associated with neurotransmitter receptor complexes, neuroactive ligand-receptor interactions, and postsynaptic signal transmission, indicating selective accumulation of synaptic and neuronal transcripts following UPF3B loss.
+
+```{r down_neuro_terms}
+library(kableExtra)
+knitr::kable(down_neuro_terms, 
+             row.names = FALSE, 
+             format = "html",
+             caption = "down-regulated neural-related pathways/functional terms") %>%
+  kable_styling(
+    bootstrap_options = c("striped", "condensed"),
+    full_width = FALSE) %>%
+  column_spec(2, width = "30em")
+
+```
+
+**Table 4. ORA of down-regulated genes in UPF3B knockout samples highlighting neural-related pathways.** The table lists significantly enriched terms related to neuron projection, neuronal cell body, dopaminergic neuron differentiation, and regulation of neurogenesis, reflecting suppression of neural development and differentiation processes upon UPF3B loss.
+
+### Neural Pathway Dysregulation
+
+Focusing on neuro-developmental processes, down-regulated gene sets were enriched for neuron projection terminus, neuronal cell body, dopaminergic neuron differentiation, and regulation of neuro-genesis, reflecting suppression of neural development and differentiation pathways [@Alrahbeni2015]. 
+
+Up-regulated gene sets, by contrast, were enriched for neurotransmitter receptor complexes, neuroactive ligand-receptor interactions, and post-synaptic signal transmission, suggesting that specific synaptic components may accumulate due to reduced NMD activity. This bidirectional pattern highlights that UPF3B knockout selectively impacts neural transcript stability, consistent with the notion that NMD targets are factor- and cell type-specific [@tan_cell_2025], rather than globally suppressed.
+
+### Integration with Published Evidence
+
+Independent studies further validate these findings. UPF3B mutations have been associated with neuro-developmental disorders [@Jolly2013], cognitive impairments [@Alrahbeni2015], and synaptic dysfunction, supporting the observed down-regulation of neuronal differentiation pathways in our analysis. 
+
+Additionally, NMD has been shown to regulate synaptic receptor composition and post-synaptic signaling, aligning with the up-regulated neurotransmitter receptor complexes detected in our analysis. ECM and vascular-related transcript regulation has also been reported in contexts where NMD influences structural gene expression [@Chamieh2008], further supporting the broader biological relevance of our ORA results. Together, these findings highlight the pathway-specific, pleiotropic effects of UPF3B knockout.
 
 # Non-thresholded gene set enrichment analysis
 

@@ -3134,9 +3134,10 @@ library(ggplot2)</code></pre>
 <div id="introduction" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> Introduction</h1>
 <p>In <a href="https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html">Assignment
-1</a>, I selected the RNA-seq dataset from a study investigating how
-nonsense-mediated RNA decay is regulated in a cell type-specific manner
-during human neural development <span class="citation">(<a href="#ref-karousis_nonsense-mediated_2016">Karousis et al.,
+1</a>, I selected the RNA-seq dataset from a study <span class="citation">(<a href="#ref-tan_cell_2025">Tan et al.,
+2025</a>)</span> investigating how nonsense-mediated RNA decay is
+regulated in a cell type-specific manner during human neural development
+<span class="citation">(<a href="#ref-karousis_nonsense-mediated_2016">Karousis et al.,
 2016</a>)</span>.</p>
 <div id="dataset-information" class="section level2" number="1.1">
 <h2><span class="header-section-number">1.1</span> Dataset
@@ -3409,7 +3410,7 @@ library(kableExtra)
 
 # keep only columns needed (avoiding list columns)
 keep_cols &lt;- c(&quot;term_id&quot;, &quot;term_name&quot;,
-               &quot;p_value&quot;, &quot;term_size&quot;, &quot;intersection_size&quot;)
+               &quot;p_value&quot;, &quot;intersection_size&quot;)
 up_subset &lt;- up_result_filtered[, keep_cols]
 
 # select top 10
@@ -3445,9 +3446,6 @@ term_name
 p_value
 </th>
 <th style="text-align:right;">
-term_size
-</th>
-<th style="text-align:right;">
 intersection_size
 </th>
 </tr>
@@ -3464,9 +3462,6 @@ Neuroactive ligand-receptor interaction
 5.30e-06
 </td>
 <td style="text-align:right;">
-365
-</td>
-<td style="text-align:right;">
 21
 </td>
 </tr>
@@ -3479,9 +3474,6 @@ GPCR ligand binding
 </td>
 <td style="text-align:left;">
 8.21e-04
-</td>
-<td style="text-align:right;">
-460
 </td>
 <td style="text-align:right;">
 22
@@ -3498,9 +3490,6 @@ Calcium signaling pathway
 1.03e-03
 </td>
 <td style="text-align:right;">
-251
-</td>
-<td style="text-align:right;">
 14
 </td>
 </tr>
@@ -3513,9 +3502,6 @@ G alpha (q) signalling events
 </td>
 <td style="text-align:left;">
 1.05e-03
-</td>
-<td style="text-align:right;">
-212
 </td>
 <td style="text-align:right;">
 14
@@ -3532,9 +3518,6 @@ phospholipase C-activating G protein-coupled receptor signaling pathway
 3.73e-03
 </td>
 <td style="text-align:right;">
-118
-</td>
-<td style="text-align:right;">
 10
 </td>
 </tr>
@@ -3547,9 +3530,6 @@ tissue morphogenesis
 </td>
 <td style="text-align:left;">
 3.73e-03
-</td>
-<td style="text-align:right;">
-331
 </td>
 <td style="text-align:right;">
 17
@@ -3566,9 +3546,6 @@ gland development
 3.73e-03
 </td>
 <td style="text-align:right;">
-144
-</td>
-<td style="text-align:right;">
 11
 </td>
 </tr>
@@ -3581,9 +3558,6 @@ hematopoietic or lymphoid organ development
 </td>
 <td style="text-align:left;">
 3.73e-03
-</td>
-<td style="text-align:right;">
-31
 </td>
 <td style="text-align:right;">
 6
@@ -3600,9 +3574,6 @@ regulation of positive chemotaxis
 3.73e-03
 </td>
 <td style="text-align:right;">
-19
-</td>
-<td style="text-align:right;">
 5
 </td>
 </tr>
@@ -3617,14 +3588,548 @@ positive chemotaxis
 5.12e-03
 </td>
 <td style="text-align:right;">
-38
-</td>
-<td style="text-align:right;">
 6
 </td>
 </tr>
 </tbody>
 </table>
+<p><strong>Table 1. Top 10 significantly enriched functional terms and
+pathways for up-regulated genes.</strong> Terms were filtered by gene
+set size (5-500 genes) and minimum intersection size (&gt;=2 genes), and
+ranked by p-value.</p>
+</div>
+<div id="top-10-down-regulated-pathways" class="section level3" number="2.3.3">
+<h3><span class="header-section-number">2.3.3</span> Top 10
+down-regulated pathways</h3>
+<pre class="r"><code>library(kableExtra)
+
+down_subset &lt;- down_result_filtered[, keep_cols]
+
+# select top 10
+down_top10 &lt;- down_subset %&gt;%
+  arrange(p_value) %&gt;%
+  slice(1:10)
+
+# modify p_value format
+down_top10$p_value &lt;- formatC(down_top10$p_value, format = &quot;e&quot;, digits = 2)
+
+# render table of top 10
+knitr::kable(down_top10, 
+             row.names = FALSE, 
+             format = &quot;html&quot;,
+             caption = &quot;Top 10 significantly down-regulated functional terms/pathways&quot;) %&gt;% 
+  kable_styling(
+    bootstrap_options = c(&quot;striped&quot;, &quot;condensed&quot;),
+    full_width = FALSE) %&gt;%
+  column_spec(2, width = &quot;30em&quot;)</code></pre>
+<table class="table table-striped table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Top 10 significantly down-regulated functional terms/pathways
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+term_id
+</th>
+<th style="text-align:left;">
+term_name
+</th>
+<th style="text-align:left;">
+p_value
+</th>
+<th style="text-align:right;">
+intersection_size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0031012" class="uri">GO:0031012</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+extracellular matrix
+</td>
+<td style="text-align:left;">
+4.22e-21
+</td>
+<td style="text-align:right;">
+69
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0030312" class="uri">GO:0030312</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+external encapsulating structure
+</td>
+<td style="text-align:left;">
+4.22e-21
+</td>
+<td style="text-align:right;">
+69
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0062023" class="uri">GO:0062023</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+collagen-containing extracellular matrix
+</td>
+<td style="text-align:left;">
+1.18e-15
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0001568" class="uri">GO:0001568</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+blood vessel development
+</td>
+<td style="text-align:left;">
+1.42e-13
+</td>
+<td style="text-align:right;">
+58
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0003013" class="uri">GO:0003013</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+circulatory system process
+</td>
+<td style="text-align:left;">
+1.39e-10
+</td>
+<td style="text-align:right;">
+50
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+REAC:R-HSA-1474244
+</td>
+<td style="text-align:left;width: 30em; ">
+Extracellular matrix organization
+</td>
+<td style="text-align:left;">
+1.53e-10
+</td>
+<td style="text-align:right;">
+41
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0048514" class="uri">GO:0048514</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+blood vessel morphogenesis
+</td>
+<td style="text-align:left;">
+2.26e-10
+</td>
+<td style="text-align:right;">
+50
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0030198" class="uri">GO:0030198</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+extracellular matrix organization
+</td>
+<td style="text-align:left;">
+2.36e-10
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0043062" class="uri">GO:0043062</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+extracellular structure organization
+</td>
+<td style="text-align:left;">
+2.54e-10
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0045229" class="uri">GO:0045229</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+external encapsulating structure organization
+</td>
+<td style="text-align:left;">
+2.75e-10
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 2. Top 10 significantly enriched functional terms and
+pathways for down-regulated genes.</strong> Terms were filtered by gene
+set size (5-500 genes) and minimum intersection size (&gt;=2 genes), and
+ranked by p-value.</p>
+</div>
+</div>
+<div id="interpretation-of-results" class="section level2" number="2.4">
+<h2><span class="header-section-number">2.4</span> Interpretation of
+results</h2>
+<p>Here in this assignment, <em>up-regulated</em> genes refer to those
+with higher expression in the <strong>UPF3B-KO</strong> (knockout) group
+compared with the <strong>Ctrl</strong> (control) group, while
+<em>down-regulated</em> genes have lower expression in the
+<strong>UPF3B-KO</strong> group.</p>
+<pre class="r"><code>if(!requireNamespace(&quot;stringr&quot;, quietly = TRUE)) {
+  install.packages(&quot;stringr&quot;)
+}
+library(dplyr)
+library(stringr)
+
+# try searching terms/pathways related to neuro-development
+up_neuro_terms &lt;- up_subset %&gt;%
+  filter(str_detect(term_name, regex(&quot;neuro&quot;, ignore_case = TRUE))) %&gt;% 
+  arrange(p_value)
+down_neuro_terms &lt;- down_subset %&gt;%
+  filter(str_detect(term_name, regex(&quot;neuro&quot;, ignore_case = TRUE))) %&gt;% 
+  arrange(p_value)</code></pre>
+<div id="summary-of-ora-results" class="section level3" number="2.4.1">
+<h3><span class="header-section-number">2.4.1</span> Summary of ORA
+Results</h3>
+<p>ORA was conducted separately for up-regulated and down-regulated
+genes in the UPF3B knockout versus control samples, with terms filtered
+by gene set size (5-500 genes) and a minimum intersection size of 2
+genes. Using these criteria, <strong>73</strong> pathways were found to
+be significantly enriched among up-regulated genes, whereas
+<strong>388</strong> pathways were significantly enriched among
+down-regulated genes, reflecting a broader and more pronounced effect on
+gene repression than activation.</p>
+<p>Notably, the down-regulated pathways included a substantial number of
+extra-cellular matrix (ECM) and vascular-related processes (as shown in
+<strong>Table 2.</strong>), such as extra-cellular matrix organization,
+collagen-containing ECM, blood vessel development, and circulatory
+system processes.</p>
+<p>In addition, neural-related pathways, including neuron projection,
+dopaminergic neuron differentiation, and regulation of neurogenesis,
+were significantly down-regulated (as shown in <strong>Table
+4.</strong>). Up-regulated pathways were enriched for neurotransmitter
+receptor complexes and synaptic signaling, suggesting selective
+transcript accumulation. Overall, these results indicate that UPF3B
+knockout affects diverse biological processes in a pathway-specific
+manner, with particularly strong effects on both <strong>neural and
+extra-cellular matrix-related functions</strong>.</p>
+<pre class="r"><code>library(kableExtra)
+knitr::kable(up_neuro_terms, 
+             row.names = FALSE, 
+             format = &quot;html&quot;,
+             caption = &quot;up-regulated neural-related pathways/functional terms&quot;) %&gt;%
+  kable_styling(
+    bootstrap_options = c(&quot;striped&quot;, &quot;condensed&quot;),
+    full_width = FALSE) %&gt;%
+  column_spec(2, width = &quot;30em&quot;)</code></pre>
+<table class="table table-striped table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+up-regulated neural-related pathways/functional terms
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+term_id
+</th>
+<th style="text-align:left;">
+term_name
+</th>
+<th style="text-align:right;">
+p_value
+</th>
+<th style="text-align:right;">
+intersection_size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+KEGG:04080
+</td>
+<td style="text-align:left;width: 30em; ">
+Neuroactive ligand-receptor interaction
+</td>
+<td style="text-align:right;">
+0.0000053
+</td>
+<td style="text-align:right;">
+21
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+REAC:R-HSA-112316
+</td>
+<td style="text-align:left;width: 30em; ">
+Neuronal System
+</td>
+<td style="text-align:right;">
+0.0241016
+</td>
+<td style="text-align:right;">
+16
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0098878" class="uri">GO:0098878</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+neurotransmitter receptor complex
+</td>
+<td style="text-align:right;">
+0.0382932
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+REAC:R-HSA-112314
+</td>
+<td style="text-align:left;width: 30em; ">
+Neurotransmitter receptors and postsynaptic signal transmission
+</td>
+<td style="text-align:right;">
+0.0421370
+</td>
+<td style="text-align:right;">
+10
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 3. ORA of up-regulated genes in UPF3B knockout samples
+highlighting neural-related pathways.</strong> The table lists
+significantly enriched terms associated with neurotransmitter receptor
+complexes, neuroactive ligand-receptor interactions, and postsynaptic
+signal transmission, indicating selective accumulation of synaptic and
+neuronal transcripts following UPF3B loss.</p>
+<pre class="r"><code>library(kableExtra)
+knitr::kable(down_neuro_terms, 
+             row.names = FALSE, 
+             format = &quot;html&quot;,
+             caption = &quot;down-regulated neural-related pathways/functional terms&quot;) %&gt;%
+  kable_styling(
+    bootstrap_options = c(&quot;striped&quot;, &quot;condensed&quot;),
+    full_width = FALSE) %&gt;%
+  column_spec(2, width = &quot;30em&quot;)</code></pre>
+<table class="table table-striped table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+down-regulated neural-related pathways/functional terms
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+term_id
+</th>
+<th style="text-align:left;">
+term_name
+</th>
+<th style="text-align:right;">
+p_value
+</th>
+<th style="text-align:right;">
+intersection_size
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+KEGG:04080
+</td>
+<td style="text-align:left;width: 30em; ">
+Neuroactive ligand-receptor interaction
+</td>
+<td style="text-align:right;">
+0.0000081
+</td>
+<td style="text-align:right;">
+36
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0044306" class="uri">GO:0044306</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+neuron projection terminus
+</td>
+<td style="text-align:right;">
+0.0003634
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0007272" class="uri">GO:0007272</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+ensheathment of neurons
+</td>
+<td style="text-align:right;">
+0.0030640
+</td>
+<td style="text-align:right;">
+11
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0043025" class="uri">GO:0043025</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+neuronal cell body
+</td>
+<td style="text-align:right;">
+0.0053345
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0071542" class="uri">GO:0071542</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+dopaminergic neuron differentiation
+</td>
+<td style="text-align:right;">
+0.0106984
+</td>
+<td style="text-align:right;">
+6
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0050905" class="uri">GO:0050905</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+neuromuscular process
+</td>
+<td style="text-align:right;">
+0.0167504
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0050767" class="uri">GO:0050767</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+regulation of neurogenesis
+</td>
+<td style="text-align:right;">
+0.0187927
+</td>
+<td style="text-align:right;">
+17
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+REAC:R-HSA-112316
+</td>
+<td style="text-align:left;width: 30em; ">
+Neuronal System
+</td>
+<td style="text-align:right;">
+0.0206791
+</td>
+<td style="text-align:right;">
+28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+<a href="GO:0005883" class="uri">GO:0005883</a>
+</td>
+<td style="text-align:left;width: 30em; ">
+neurofilament
+</td>
+<td style="text-align:right;">
+0.0398329
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 4. ORA of down-regulated genes in UPF3B knockout
+samples highlighting neural-related pathways.</strong> The table lists
+significantly enriched terms related to neuron projection, neuronal cell
+body, dopaminergic neuron differentiation, and regulation of
+neurogenesis, reflecting suppression of neural development and
+differentiation processes upon UPF3B loss.</p>
+</div>
+<div id="neural-pathway-dysregulation" class="section level3" number="2.4.2">
+<h3><span class="header-section-number">2.4.2</span> Neural Pathway
+Dysregulation</h3>
+<p>Focusing on neuro-developmental processes, down-regulated gene sets
+were enriched for neuron projection terminus, neuronal cell body,
+dopaminergic neuron differentiation, and regulation of neuro-genesis,
+reflecting suppression of neural development and differentiation
+pathways <span class="citation">(<a href="#ref-Alrahbeni2015">Alrahbeni
+et al., 2015</a>)</span>.</p>
+<p>Up-regulated gene sets, by contrast, were enriched for
+neurotransmitter receptor complexes, neuroactive ligand-receptor
+interactions, and post-synaptic signal transmission, suggesting that
+specific synaptic components may accumulate due to reduced NMD activity.
+This bidirectional pattern highlights that UPF3B knockout selectively
+impacts neural transcript stability, consistent with the notion that NMD
+targets are factor- and cell type-specific <span class="citation">(<a href="#ref-tan_cell_2025">Tan et al., 2025</a>)</span>, rather than
+globally suppressed.</p>
+</div>
+<div id="integration-with-published-evidence" class="section level3" number="2.4.3">
+<h3><span class="header-section-number">2.4.3</span> Integration with
+Published Evidence</h3>
+<p>Independent studies further validate these findings. UPF3B mutations
+have been associated with neuro-developmental disorders <span class="citation">(<a href="#ref-Jolly2013">Jolly et al.,
+2013</a>)</span>, cognitive impairments <span class="citation">(<a href="#ref-Alrahbeni2015">Alrahbeni et al., 2015</a>)</span>, and
+synaptic dysfunction, supporting the observed down-regulation of
+neuronal differentiation pathways in our analysis.</p>
+<p>Additionally, NMD has been shown to regulate synaptic receptor
+composition and post-synaptic signaling, aligning with the up-regulated
+neurotransmitter receptor complexes detected in our analysis. ECM and
+vascular-related transcript regulation has also been reported in
+contexts where NMD influences structural gene expression <span class="citation">(<a href="#ref-Chamieh2008">Chamieh et al.,
+2008</a>)</span>, further supporting the broader biological relevance of
+our ORA results. Together, these findings highlight the
+pathway-specific, pleiotropic effects of UPF3B knockout.</p>
 </div>
 </div>
 </div>
@@ -3648,6 +4153,12 @@ entry</h1>
 <div id="references" class="section level1 unnumbered">
 <h1 class="unnumbered">References</h1>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0" line-spacing="2">
+<div id="ref-Alrahbeni2015" class="csl-entry">
+Alrahbeni, T., Sartor, F., Anderson, J., Miedzybrodzka, Z., McCaig, C.,
+&amp; Müller, B. (2015). Full <span>UPF3B</span> function is critical
+for neuronal differentiation of neural stem cells. <em>Molecular
+Brain</em>, <em>8</em>, 33. <a href="https://doi.org/10.1186/s13041-015-0122-1">https://doi.org/10.1186/s13041-015-0122-1</a>
+</div>
 <div id="ref-benjamini1995" class="csl-entry">
 Benjamini, Y., &amp; Hochberg, Y. (1995). Controlling the false
 discovery rate: A practical and powerful approach to multiple testing.
@@ -3660,6 +4171,13 @@ Bono, F., Le Hir, H., &amp; Conti, E. (2010). Insights into the
 recruitment of the NMD machinery from the crystal structure of a core
 EJC-UPF3b complex. <em>Proceedings of the National Academy of Sciences
 of the United States of America</em>, <em>107</em>, 10050–10055.
+</div>
+<div id="ref-Chamieh2008" class="csl-entry">
+Chamieh, H., Ballut, L., Bonneau, F., &amp; Le Hir, H. (2008). NMD
+factors <span>UPF2</span> and <span>UPF3</span> bridge <span>UPF1</span>
+to the exon junction complex and stimulate its RNA helicase activity.
+<em>Nature Structural &amp; Molecular Biology</em>, <em>15</em>(1),
+85–93. <a href="https://doi.org/10.1038/nsmb1330">https://doi.org/10.1038/nsmb1330</a>
 </div>
 <div id="ref-edgeR" class="csl-entry">
 Chen, Y., Chen, L., Lun, A. T. L., Baldoni, P., &amp; Smyth, G. K.
@@ -3684,6 +4202,13 @@ Gu, Z. (2022). Complex heatmap visualization. <em>iMeta</em>. <a href="https://d
 </div>
 <div id="ref-Isserlin2024" class="csl-entry">
 Isserlin, R. (2024). <em>CBW workshop example r notebooks</em>. <a href="https://baderlab.github.io/CBW_Pathways_2024/">https://baderlab.github.io/CBW_Pathways_2024/</a>
+</div>
+<div id="ref-Jolly2013" class="csl-entry">
+Jolly, L. A., Homan, C. C., Jacob, R., Barry, S., &amp; Gecz, J. (2013).
+The <span>UPF3B</span> gene, implicated in intellectual disability,
+autism, <span>ADHD</span> and childhood onset schizophrenia regulates
+neural progenitor cell behaviour and neuronal outgrowth. <em>Human
+Molecular Genetics</em>, <em>22</em>(23), 4673–4687. <a href="https://doi.org/10.1093/hmg/ddt315">https://doi.org/10.1093/hmg/ddt315</a>
 </div>
 <div id="ref-Kadlec2004" class="csl-entry">
 Kadlec, J., Izaurralde, E., &amp; Cusack, S. (2004). The structural
