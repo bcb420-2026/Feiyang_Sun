@@ -537,6 +537,7 @@ Differential expression analysis was performed using the quasi-likelihood F-test
 To account for multiple hypothesis testing across thousands of genes, the p-values were adjusted using the Benjamini-Hochberg (BH) method [@benjamini1995], which controls the false discovery rate (FDR) while maintaining statistical power. Genes with FDR < 0.05 were considered significantly differentially expressed, resulting in X genes. An additional filter of |log2 fold change| > 1 was applied to identify high-confidence changes, yielding Y genes. These thresholds were chosen to balance statistical significance and biological relevance.
 
 ```{r, message=FALSE, warning=FALSE}
+library(dplyr)
 
 fit <- glmQLFit(dge_norm, design)
 qlf <- glmQLFTest(fit, coef = 2)
@@ -551,6 +552,9 @@ FDR_FC <- sum(qlf_table$FDR < 0.05 & abs(qlf_table$logFC) > 1)
 
 # export significant genes
 sig_genes <- qlf_table[qlf_table$FDR < 0.05 & abs(qlf_table$logFC) > 1, ]
+sig_genes$gene_name <- row.names(sig_genes)
+sig_genes <- sig_genes %>%
+  dplyr::select(gene_name, everything())
 
 setwd("/home/rstudio/projects/A1")
 outfile <- "../A2/data/sig_genes.csv"
