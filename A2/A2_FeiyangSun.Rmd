@@ -381,7 +381,7 @@ For the non-thresholded gene set enrichment analysis (GSEA), we selected the new
 
 This file contains all Gene Ontology (GO) pathways across biological processes, molecular functions, and cellular components, represented by gene symbols. We specifically chose the version without parent–child overlap correction (noPFOCR) to retain the full hierarchical structure of GO terms, and without IEA (Inferred from Electronic Annotation) evidence to ensure high-confidence annotations. This selection balances comprehensive coverage of relevant GO pathways with reliable, experimentally supported gene annotations, enhancing the interpretability of the enrichment results.
 
-```{r GSEA initiation, message = FALSE}
+```{r .gmt download, message = FALSE}
 if(!requireNamespace("RCurl", quietly = TRUE)) {
   install.packages("RCurl")
 }
@@ -406,6 +406,12 @@ if(!file.exists(dest_gmt_file)){
 } else {
   message("GMT file already exists: ", dest_gmt_file)
 }
+
+```
+
+## Generating .rnk file
+```{r .rnk generate}
+
 
 ```
 
