@@ -4140,9 +4140,16 @@ set enrichment analysis (GSEA)</h1>
 <h2><span class="header-section-number">3.1</span> Fetching .gmt
 file</h2>
 <p>For the non-thresholded gene set enrichment analysis (GSEA), we
-selected the newest released GMT file
-<strong>Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt</strong>
+selected the newest released <code>.gmt</code> file
+<strong>Human_GOBP_AllPathways_noPFOCR_no_GO_iea_September_01_2025_symbol.gmt”</strong>
 from BaderLab Gene Sets <span class="citation">(<a href="#ref-BaderLab_GeneSets">Lab, 2026</a>)</span>.</p>
+<blockquote>
+<p>Note: Firstly, I attempted to use the current release version
+(Mar. 02, 2026); however, errors occurred when loading the GMT file in
+the GSEA application due to duplicate gene set names. Therefore, an
+alternative gene set collection without duplicate pathway names was used
+for the subsequent analysis.</p>
+</blockquote>
 <p>This file contains all Gene Ontology (GO) pathways across biological
 processes, molecular functions, and cellular components, represented by
 gene symbols. We specifically chose the version without parent–child
@@ -4158,7 +4165,7 @@ interpretability of the enrichment results.</p>
 library(RCurl)
 
 # select current release - Mar.02
-gmt_file_name &lt;- &quot;Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt&quot;
+gmt_file_name &lt;- &quot;Human_GOBP_AllPathways_noPFOCR_no_GO_iea_September_01_2025_symbol.gmt&quot;
 setwd(&quot;/home/rstudio/projects/A2&quot;)
 data_dir &lt;- &quot;./data&quot;
 
@@ -4167,7 +4174,7 @@ if(!dir.exists(data_dir)) dir.create(data_dir)
 dest_gmt_file &lt;- file.path(data_dir, gmt_file_name)
 
 # URL for download
-gmt_url &lt;- paste0(&quot;http://download.baderlab.org/EM_Genesets/current_release/Human/symbol/&quot;, gmt_file_name)
+gmt_url &lt;- paste0(&quot;http://download.baderlab.org/EM_Genesets/September_01_2025/Human/symbol/&quot;, gmt_file_name)
 
 # download GMT file if not already present
 if(!file.exists(dest_gmt_file)){
@@ -4176,6 +4183,70 @@ if(!file.exists(dest_gmt_file)){
 } else {
   message(&quot;GMT file already exists: &quot;, dest_gmt_file)
 }</code></pre>
+</div>
+<div id="generating-.rnk-file" class="section level2" number="3.2">
+<h2><span class="header-section-number">3.2</span> Generating .rnk
+file</h2>
+<p>We generated a <code>.rnk</code> file containing all genes from the
+differential expression analysis in Assignment 1. Each gene was assigned
+a ranking score calculated as the sign of the log2 fold-change
+multiplied by the negative log10 of the p value corrected using FDR:
+<span class="math display">\[
+\text{rank} = \text{sign}(\text{logFC}) \times -\log_{10}(\text{FDR
+adjusted pValue})
+\]</span> Positive values indicate genes up-regulated in the condition
+of interest, whereas negative values indicate down-regulated genes.</p>
+<p>This ranking strategy was chosen to capture both the
+<strong>direction and statistical significance of differential
+expression</strong>, ensuring that genes with small but highly
+significant changes contribute appropriately to enrichment analysis.
+Using this approach allows non-thresholded GSEA to leverage information
+from all measured genes, rather than only those passing arbitrary
+significance cutoffs, increasing the sensitivity and interpretability of
+pathway-level results.</p>
+<pre class="r"><code>library(dplyr)
+
+setwd(&quot;/home/rstudio/projects/A2&quot;)
+results_DEA &lt;- read.csv(&quot;data/DEA_result.csv&quot;, stringsAsFactors = FALSE)
+
+ranked_genes &lt;- results_DEA %&gt;%
+  mutate(rank = sign(logFC) * (-log10(FDR))) %&gt;%
+  # keep only two required columns
+  dplyr::select(gene_name, rank) %&gt;%
+  arrange(desc(rank))
+
+# save .rnk file into data dir
+data_dir &lt;- &quot;./data&quot;
+rnk_file &lt;- file.path(data_dir, &quot;pre_GSEA_rank.rnk&quot;)
+
+if (!file.exists(rnk_file)) {
+  write.table(ranked_genes, 
+            file = rnk_file, 
+            sep = &quot;\t&quot;, row.names = FALSE, col.names = FALSE, quote = FALSE)
+  message(&quot;DEA CSV file created: &quot;, rnk_file)
+} else {
+  message(&quot;DEA File already exists, skipping write: &quot;, rnk_file)
+}
+
+paged_table(ranked_genes[1:10, ] )</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":[""],"name":["_rn_"],"type":[""],"align":["left"]},{"label":["gene_name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["rank"],"name":[2],"type":["dbl"],"align":["right"]}],"data":[{"1":"ANGPTL7","2":"33.90327","_rn_":"1"},{"1":"GNAS","2":"28.27420","_rn_":"2"},{"1":"PI15","2":"27.66030","_rn_":"3"},{"1":"NRCAM","2":"25.86643","_rn_":"4"},{"1":"TNC","2":"25.30511","_rn_":"5"},{"1":"GAS5","2":"25.30511","_rn_":"6"},{"1":"ANO1","2":"24.20063","_rn_":"7"},{"1":"PEA15","2":"24.06108","_rn_":"8"},{"1":"COL8A1","2":"23.92648","_rn_":"9"},{"1":"NBPF9","2":"23.35058","_rn_":"10"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p><strong>Table 5. Gene rank, calculated as the sign of the log2
+fold-change multiplied by the negative log10 of the FDR.</strong>
+Positive values indicate genes up-regulated in the condition of
+interest, while negative values indicate down-regulated genes. For
+clarity, only the first 10 rows and first 10 columns are shown.</p>
+</div>
+<div id="gsea-process" class="section level2" number="3.3">
+<h2><span class="header-section-number">3.3</span> GSEA process</h2>
+<p>Our analysis workflow was adapted from the CBW Pathway Workshop
+framework <span class="citation">(<a href="#ref-Isserlin2024">Isserlin,
+2024</a>)</span>, with several adjustments and customizations applied to
+suit the specific needs of this study. The process was performed using
+the GSEA desktop software version 4.4.0.</p>
 </div>
 </div>
 <div id="visualize-gene-set-enrichment-analysis-in-cytoscape" class="section level1" number="4">

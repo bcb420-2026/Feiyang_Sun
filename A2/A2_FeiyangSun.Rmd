@@ -377,7 +377,9 @@ Additionally, NMD has been shown to regulate synaptic receptor composition and p
 
 ## Fetching .gmt file
 
-For the non-thresholded gene set enrichment analysis (GSEA), we selected the newest released GMT file **Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt** from BaderLab Gene Sets [@BaderLab_GeneSets]. 
+For the non-thresholded gene set enrichment analysis (GSEA), we selected the newest released `.gmt` file **Human_GO_AllPathways_noPFOCR_no_GO_iea_September_01_2025_symbol.gmt"** from BaderLab Gene Sets [@BaderLab_GeneSets]. 
+
+> Note: Firstly, I attempted to use the current release version (Mar. 02, 2026); however, errors occurred when loading the GMT file in the GSEA application due to duplicate gene set names. Therefore, an alternative gene set collection without duplicate pathway names was used for the subsequent analysis.
 
 This file contains all Gene Ontology (GO) pathways across biological processes, molecular functions, and cellular components, represented by gene symbols. We specifically chose the version without parent–child overlap correction (noPFOCR) to retain the full hierarchical structure of GO terms, and without IEA (Inferred from Electronic Annotation) evidence to ensure high-confidence annotations. This selection balances comprehensive coverage of relevant GO pathways with reliable, experimentally supported gene annotations, enhancing the interpretability of the enrichment results.
 
@@ -388,7 +390,7 @@ if(!requireNamespace("RCurl", quietly = TRUE)) {
 library(RCurl)
 
 # select current release - Mar.02
-gmt_file_name <- "Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt"
+gmt_file_name <- "Human_GO_AllPathways_noPFOCR_no_GO_iea_September_01_2025_symbol.gmt"
 setwd("/home/rstudio/projects/A2")
 data_dir <- "./data"
 
@@ -397,7 +399,7 @@ if(!dir.exists(data_dir)) dir.create(data_dir)
 dest_gmt_file <- file.path(data_dir, gmt_file_name)
 
 # URL for download
-gmt_url <- paste0("http://download.baderlab.org/EM_Genesets/current_release/Human/symbol/", gmt_file_name)
+gmt_url <- paste0("http://download.baderlab.org/EM_Genesets/September_01_2025/Human/symbol/", gmt_file_name)
 
 # download GMT file if not already present
 if(!file.exists(dest_gmt_file)){
@@ -410,10 +412,51 @@ if(!file.exists(dest_gmt_file)){
 ```
 
 ## Generating .rnk file
-```{r .rnk generate}
 
+We generated a `.rnk` file containing all genes from the differential expression analysis in Assignment 1. Each gene was assigned a ranking score calculated as the sign of the log2 fold-change multiplied by the negative log10 of the p value corrected using FDR:
+$$
+\text{rank} = \text{sign}(\text{logFC}) \times -\log_{10}(\text{FDR adjusted pValue})
+$$
+Positive values indicate genes up-regulated in the condition of interest, whereas negative values indicate down-regulated genes.
+
+This ranking strategy was chosen to capture both the **direction and statistical significance of differential expression**, ensuring that genes with small but highly significant changes contribute appropriately to enrichment analysis. Using this approach allows non-thresholded GSEA to leverage information from all measured genes, rather than only those passing arbitrary significance cutoffs, increasing the sensitivity and interpretability of pathway-level results.
+
+```{r .rnk generate}
+library(dplyr)
+
+setwd("/home/rstudio/projects/A2")
+results_DEA <- read.csv("data/DEA_result.csv", stringsAsFactors = FALSE)
+
+ranked_genes <- results_DEA %>%
+  mutate(rank = sign(logFC) * (-log10(FDR))) %>%
+  # keep only two required columns
+  dplyr::select(gene_name, rank) %>%
+  arrange(desc(rank))
+
+# save .rnk file into data dir
+data_dir <- "./data"
+rnk_file <- file.path(data_dir, "pre_GSEA_rank.rnk")
+
+if (!file.exists(rnk_file)) {
+  write.table(ranked_genes, 
+            file = rnk_file, 
+            sep = "\t", row.names = FALSE, col.names = FALSE, quote = FALSE)
+  message("DEA CSV file created: ", rnk_file)
+} else {
+  message("DEA File already exists, skipping write: ", rnk_file)
+}
+
+paged_table(ranked_genes[1:10, ] )
 
 ```
+
+**Table 5. Gene rank, calculated as the sign of the log2 fold-change multiplied by the negative log10 of the FDR.** Positive values indicate genes up-regulated in the condition of interest, while negative values indicate down-regulated genes. For clarity, only the first 10 rows and first 10 columns are shown.
+
+## GSEA process
+Our analysis workflow was adapted from the CBW Pathway Workshop framework  [@Isserlin2024], with several adjustments and customizations applied to suit the specific needs of this study. The process was performed using the GSEA desktop software version 4.4.0.
+
+
+
 
 # Visualize gene set enrichment analysis in Cytoscape
 
