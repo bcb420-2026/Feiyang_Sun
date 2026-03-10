@@ -1,5 +1,6 @@
 ---
 title: "BCB420 Assignment 2"
+subtitle: "Pathway and Network Analysis"
 author: "Feiyang Sun"
 date: "2026-03-10"
 output: 
@@ -9,7 +10,7 @@ output:
     toc_float: true
     number_sections: true
     theme: cerulean
-    highlight: tango
+    syntax_highlighting: tango
     fig_caption: true
     df_print: paged 
     code_folding: hide
@@ -23,6 +24,45 @@ link-citations: true
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
+# 0 Package installation check {.unnumbered}
+```{r package check, warning = FALSE}
+# Check installation
+if(!requireNamespace("knitr", quietly = TRUE)) {
+  install.packages("knitr")
+}
+if(!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+if(!requireNamespace("readr", quietly = TRUE)) {
+  install.packages("readr")
+}
+if(!requireNamespace("rmarkdown", quietly = TRUE)) {
+  install.packages("rmarkdown")
+}
+if(!requireNamespace("tidyr", quietly = TRUE)) {
+  install.packages("tidyr")
+}
+if(!requireNamespace("tibble", quietly = TRUE)) {
+  install.packages("tibble")
+}
+if(!requireNamespace("BiocManager", quietly = TRUE)) {
+  install.packages("BiocManager")
+}
+if(!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+
+# Attach
+library(knitr)
+library(dplyr)
+library(readr)
+library(rmarkdown)
+library(tidyr)
+library(tibble)
+library(BiocManager)
+library(ggplot2)
+```
+
 # Introduction
 
 In [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html), I selected the RNA-seq dataset from a study investigating how nonsense-mediated RNA decay is regulated in a cell type-specific manner during human neural development  [@karousis_nonsense-mediated_2016].
@@ -32,21 +72,146 @@ The dataset used in this analysis is GEO accession: **GSE263406**, a publicly av
 
 Specifically, bulk RNA-seq was performed on neural progenitor cells (NPCs) differentiated from human embryonic stem cells (hESCs). The experimental design compares two groups: a **control (Ctrl)** group and a **UPF3B knockout (UPF3B-KO)** group. By comparing gene expression profiles between these groups, the study aims to identify transcripts whose stability or abundance is affected by the loss of UPF3B. This dataset provides insight into how NMD sensitivity can change depending on cellular context [@Buchwald2010], particularly during the transition from pluripotent stem cells to neural progenitor cells, and helps reveal how RNA-binding proteins may contribute to cell type-specific regulation of RNA decay.
 
-The full dataset (after simple filtering) contains 43884 genes and 12 samples: <br> - **(Ctrl_1-6)**: six control replicates where the UPF3B gene is intact and expressed. <br>
+The full dataset (after simple filtering) contains 43884 genes and 12 samples: <br>
+- **(Ctrl_1-6)**: six control replicates where the UPF3B gene is intact and expressed. <br>
 - **(UPF3B.KO_1-6)**: six replicates where UPF3B gene has been genetically disrupted (knockout).
+
+See [Figure 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html#visualizing-library-sizes-across-samples) in the A1 html file.
 
 ## Dataset processing
 The bulk mRNA-seq dataset used in this analysis was obtained from GEO and accessed via the GEOquery package in R. Genes with no expression across all samples were removed, leaving 43,884 genes across 12 samples. Library sizes were visualized to assess sample consistency, and Ensembl gene IDs were mapped to HGNC symbols using the `biomaRt` package [@biomaRt], resulting in 31,282 successfully annotated genes. Lowly expressed genes were filtered with `edgeR`’s *filterByExpr()* [@edgeR], retaining **19,197** genes for downstream analysis.
 
 Normalization was performed using the TMM (Trimmed Mean of M-values) method [@robinson_scaling_2010] to adjust for differences in library size and sequencing depth, assuming most genes are not differentially expressed. Raw count distributions were evaluated using log2-transformed boxplots and density plots, which highlighted potential outliers and confirmed consistency across replicates. Post-normalization comparisons showed improved uniformity in expression distributions, preparing the dataset for subsequent differential expression analysis.
 
-## Differential Expression Analysis
+## Differential expression analysis
 Differential expression analysis of TMM-normalized log2 CPM values showed clear separation between control and UPF3B knockout NPC samples in multidimensional scaling plots. The BCV plot indicated low variability among replicates (common dispersion ~0.1). 
 
 Using an **FDR cutoff of 0.05** and applying an additional threshold of **|log2FC| > 1** yielded 1209 high-confidence genes. UPF3B knockout led to more down-regulated genes (n = 727) than up-regulated (n = 482), suggesting a primarily positive regulatory role in NPCs and highlighting its cell type-specific effects. [Volcano plot.](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html#volcano-plot)
 
 
+# Over-representation analysis (ORA)
 
+Here, we perform over-representation analysis (ORA) [@khatri2012ORA] using package `gprofiler2` on the significant genes identified in A1, focusing on biologically relevant gene sets.
+
+## Importing dataset from A1
+
+In the A1 analysis file, additional code was added to identify significant genes using an FDR cutoff of 0.05 and an additional threshold of |log2FC| > 1. These filtered genes were then exported as a CSV file to the `A2/data` directory, making them readily available for subsequent analyses in the code chunk below. Subsets for up-regulated and down-regulated genes are also stored here.
+
+```{r import dataset from a1, warning = FALSE}
+library(dplyr)
+
+setwd("/home/rstudio/projects/A2")
+
+# read in significant genes list exported from Assignment 1
+sig_genes_A1 <- read.csv("data/sig_genes.csv", stringsAsFactors = FALSE)
+
+# set into different subsets
+up_genes <- sig_genes_A1 %>%
+  filter(logFC > 0)
+up_genes_names <- up_genes$gene_name
+
+down_genes <- sig_genes_A1 %>%
+  filter(logFC < 0)
+down_genes_names <- down_genes$gene_name
+
+all_genes_names <- sig_genes_A1$gene_name
+
+# summary message
+cat("All significant genes:", length(all_genes_names),
+    "\nUp regulated genes:", length(up_genes_names),
+    "\nDown regulated genes:", length(down_genes_names))
+```
+
+## ORA methods and process
+
+### Parameters
+**Data source selection:**
+For the over-representation analysis (ORA) of UPF3B-related significant genes, we selected the following databases as sources: `GO-BP` (Biological Process) to capture the biological processes influenced by UPF3B, including RNA metabolism and neural development;
+`GO-CC` (Cellular Component) to identify subcellular localization patterns of the affected proteins;
+`KEGG` to map genes onto classical signaling and metabolic pathways;
+and `REAC` (Reactome) to include curated human pathways relevant to mRNA decay and neurodevelopmental processes. This combination provides a comprehensive view of the functional and pathway-level impacts of UPF3B knockout in neural progenitor cells.
+
+**Organism:**
+Specify the analysis for human genes according to course requirements.
+
+**Correction method:**
+Control for multiple testing using false discovery rate (or Benjamini-Hochberg method) [@benjamini1995].
+
+**Other parameters:** <br>
+`ordered_query = FALSE`: perform strict thresholded ORA without considering gene ranking. <br>
+`significant = TRUE`: return only statistically significant enriched terms. <br>
+`exclude_iea = TRUE`: exclude automatic electronic annotations to focus on high-confidence terms.
+
+```{r perform ORA using gprofiler2 package, warning = FALSE}
+# ensure the package is installed and attached
+if(!requireNamespace("gprofiler2", quietly = TRUE)) {
+  install.packages("gprofiler2")
+}
+library(gprofiler2)
+
+sources_lst <- c("GO:BP",    # Gene Ontology - Biological Process
+                 "GO:CC",    # Gene Ontology – Cellular Component
+                 "KEGG",     # Kyoto Encyclopedia of Genes and Genomes
+                 "REAC"      # Reactome Pathways
+                 )
+
+# Thresholded ORA on up-regulated genes
+upreg_ora <- gost(
+  query = up_genes_names,   # focus on upregulated genes
+  sources = sources_lst,    # restricted to these sources
+  organism = "hsapiens",    # focus on pathways in human
+  correction_method = "fdr",# False Discovery Rate (Benjamini-Hochberg Method)
+  ordered_query = FALSE,    # put FALSE for strict thresholded ORA
+  significant = TRUE,       # statistically significant pathways
+  exclude_iea = TRUE        # focus on high-confidence annotations
+  )
+
+# Thresholded ORA on down-regulated genes
+downreg_ora <- gost(
+  query = down_genes_names,
+  sources = sources_lst,
+  organism = "hsapiens",
+  correction_method = "fdr",
+  ordered_query = FALSE,
+  significant = TRUE,
+  exclude_iea = TRUE
+  )
+
+```
+
+### Visualization using Manhattan plots
+
+```{r visalization}
+if(!requireNamespace("patchwork", quietly = TRUE)) {
+  install.packages("patchwork")
+}
+library(gprofiler2)
+library(patchwork)
+
+# Interactive plot (zoomable, hover for gene info)
+p_up <- gostplot(
+  upreg_ora,
+  capped = TRUE,
+  interactive = FALSE
+)
+p_down <- gostplot(
+  downreg_ora,
+  capped = TRUE,
+  interactive = FALSE
+)
+
+p_up / p_down
+```
+
+## Extract results
+
+
+
+# Non-thresholded gene set enrichment analysis
+
+# Visualize gene set enrichment analysis in Cytoscape
+
+# Question throughout the process
 
 # Link to journal entry
 A2 journal entry could be found [here](https://github.com/bcb420-2026/Feiyang_Sun/wiki/Assignment-2).
