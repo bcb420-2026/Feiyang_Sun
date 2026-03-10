@@ -566,6 +566,14 @@ if (!file.exists(outfile)) {
   message("File already exists, skipping write: ", outfile)
 }
 
+deafile <- "../A2/data/DEA_result.csv"
+if (!file.exists(deafile)) {
+  write.csv(qlf_table, deafile, row.names = FALSE)
+  message("DEA CSV file created: ", deafile)
+} else {
+  message("DEA File already exists, skipping write: ", deafile)
+}
+
 cat("Number of genes passing FDR < 0.05:", FDR, 
     "\nNumber of genes passing FDR < 0.05 and |log2FC| > 1:", FDR_FC, "\n")
 
