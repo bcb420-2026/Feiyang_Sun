@@ -383,7 +383,7 @@ For the non-thresholded gene set enrichment analysis (GSEA), we selected the new
 
 This file contains all Gene Ontology (GO) pathways across biological processes, molecular functions, and cellular components, represented by gene symbols. We specifically chose the version without parent–child overlap correction (noPFOCR) to retain the full hierarchical structure of GO terms, and without IEA (Inferred from Electronic Annotation) evidence to ensure high-confidence annotations. This selection balances comprehensive coverage of relevant GO pathways with reliable, experimentally supported gene annotations, enhancing the interpretability of the enrichment results.
 
-```{r .gmt download, message = FALSE}
+```{r .gmt download, message = FALSE, warning = FALSE}
 if(!requireNamespace("RCurl", quietly = TRUE)) {
   install.packages("RCurl")
 }
@@ -424,7 +424,7 @@ This ranking strategy was chosen to capture both the **direction and statistical
 ```{r .rnk generate}
 library(dplyr)
 
-setwd("/home/rstudio/projects/A2")
+setwd("~/projects/A2")
 results_DEA <- read.csv("data/DEA_result.csv", stringsAsFactors = FALSE)
 
 ranked_genes <- results_DEA %>%
@@ -453,10 +453,27 @@ paged_table(ranked_genes[1:10, ] )
 **Table 5. Gene rank, calculated as the sign of the log2 fold-change multiplied by the negative log10 of the FDR.** Positive values indicate genes up-regulated in the condition of interest, while negative values indicate down-regulated genes. For clarity, only the first 10 rows and first 10 columns are shown.
 
 ## GSEA process
-Our analysis workflow was adapted from the CBW Pathway Workshop framework  [@Isserlin2024], with several adjustments and customizations applied to suit the specific needs of this study. The process was performed using the GSEA desktop software version 4.4.0.
+Our analysis workflow was adapted from the CBW Pathway Workshop framework  [@Isserlin2024], with several adjustments and customizations applied to suit the specific needs of this study. The process was performed using the GSEA desktop software.
 
+### Parameters
 
+**GSEA desktop version:** v4.4.0
 
+**Geneset database:** Human_GO_AllPathways_noPFOCR_no_GO_iea_September_01_2025_symbol.gmt
+
+**Number of permutations:** 2000
+
+**Ranked DEGs:** pre_GSEA_rank.rnk
+
+**Collapse/Remap to gene symbols:** No_Collapse
+
+**Max size:** 500
+
+**Min size:** 15
+
+![Scree shot for GSEA parameters](figure/GSEA_parameters.png)
+
+**Figure 2. Screenshot of the parameter settings used for the GSEA analysis.** The interface displays key configuration options including the number of permutations, selection of the ranked gene list file, and the option to disable gene symbol remapping since the ranked list already contains gene symbols. Additional settings shown include the specification of an analysis name to label the output directory, adjustment of gene set size filters to exclude excessively large or small pathways, and selection of the output directory where GSEA saves the analysis results.
 
 # Visualize gene set enrichment analysis in Cytoscape
 
