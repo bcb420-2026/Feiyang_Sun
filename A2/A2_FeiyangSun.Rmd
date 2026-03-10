@@ -242,7 +242,7 @@ cat("Significant up-regulated pathways:", up_pathways,
 ```
 
 ### Top 10 up-regulated pathways
-```{r result tables}
+```{r up result table}
 if(!requireNamespace("kableExtra", quietly = TRUE)) {
   install.packages("kableExtra")
 }
@@ -275,7 +275,7 @@ knitr::kable(up_top10,
 **Table 1. Top 10 significantly enriched functional terms and pathways for up-regulated genes.** Terms were filtered by gene set size (5-500 genes) and minimum intersection size (>=2 genes), and ranked by p-value.
 
 ### Top 10 down-regulated pathways
-```{r}
+```{r down result table}
 library(kableExtra)
 
 down_subset <- down_result_filtered[, keep_cols]
@@ -373,7 +373,41 @@ Independent studies further validate these findings. UPF3B mutations have been a
 
 Additionally, NMD has been shown to regulate synaptic receptor composition and post-synaptic signaling, aligning with the up-regulated neurotransmitter receptor complexes detected in our analysis. ECM and vascular-related transcript regulation has also been reported in contexts where NMD influences structural gene expression [@Chamieh2008], further supporting the broader biological relevance of our ORA results. Together, these findings highlight the pathway-specific, pleiotropic effects of UPF3B knockout.
 
-# Non-thresholded gene set enrichment analysis
+# Non-thresholded gene set enrichment analysis (GSEA)
+
+## Fetching .gmt file
+
+For the non-thresholded gene set enrichment analysis (GSEA), we selected the newest released GMT file **Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt** from BaderLab Gene Sets [@BaderLab_GeneSets]. 
+
+This file contains all Gene Ontology (GO) pathways across biological processes, molecular functions, and cellular components, represented by gene symbols. We specifically chose the version without parent–child overlap correction (noPFOCR) to retain the full hierarchical structure of GO terms, and without IEA (Inferred from Electronic Annotation) evidence to ensure high-confidence annotations. This selection balances comprehensive coverage of relevant GO pathways with reliable, experimentally supported gene annotations, enhancing the interpretability of the enrichment results.
+
+```{r GSEA initiation, message = FALSE}
+if(!requireNamespace("RCurl", quietly = TRUE)) {
+  install.packages("RCurl")
+}
+library(RCurl)
+
+# select current release - Mar.02
+gmt_file_name <- "Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt"
+setwd("/home/rstudio/projects/A2")
+data_dir <- "./data"
+
+# set download directory
+if(!dir.exists(data_dir)) dir.create(data_dir)
+dest_gmt_file <- file.path(data_dir, gmt_file_name)
+
+# URL for download
+gmt_url <- paste0("http://download.baderlab.org/EM_Genesets/current_release/Human/symbol/", gmt_file_name)
+
+# download GMT file if not already present
+if(!file.exists(dest_gmt_file)){
+  message("Downloading GMT file to: ", dest_gmt_file)
+  download.file(gmt_url, destfile = dest_gmt_file, mode = "wb")
+} else {
+  message("GMT file already exists: ", dest_gmt_file)
+}
+
+```
 
 # Visualize gene set enrichment analysis in Cytoscape
 

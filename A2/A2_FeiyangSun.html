@@ -4133,9 +4133,50 @@ pathway-specific, pleiotropic effects of UPF3B knockout.</p>
 </div>
 </div>
 </div>
-<div id="non-thresholded-gene-set-enrichment-analysis" class="section level1" number="3">
+<div id="non-thresholded-gene-set-enrichment-analysis-gsea" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> Non-thresholded gene
-set enrichment analysis</h1>
+set enrichment analysis (GSEA)</h1>
+<div id="fetching-.gmt-file" class="section level2" number="3.1">
+<h2><span class="header-section-number">3.1</span> Fetching .gmt
+file</h2>
+<p>For the non-thresholded gene set enrichment analysis (GSEA), we
+selected the newest released GMT file
+<strong>Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt</strong>
+from BaderLab Gene Sets <span class="citation">(<a href="#ref-BaderLab_GeneSets">Lab, 2026</a>)</span>.</p>
+<p>This file contains all Gene Ontology (GO) pathways across biological
+processes, molecular functions, and cellular components, represented by
+gene symbols. We specifically chose the version without parent–child
+overlap correction (noPFOCR) to retain the full hierarchical structure
+of GO terms, and without IEA (Inferred from Electronic Annotation)
+evidence to ensure high-confidence annotations. This selection balances
+comprehensive coverage of relevant GO pathways with reliable,
+experimentally supported gene annotations, enhancing the
+interpretability of the enrichment results.</p>
+<pre class="r"><code>if(!requireNamespace(&quot;RCurl&quot;, quietly = TRUE)) {
+  install.packages(&quot;RCurl&quot;)
+}
+library(RCurl)
+
+# select current release - Mar.02
+gmt_file_name &lt;- &quot;Human_GO_AllPathways_noPFOCR_no_GO_iea_March_02_2026_symbol.gmt&quot;
+setwd(&quot;/home/rstudio/projects/A2&quot;)
+data_dir &lt;- &quot;./data&quot;
+
+# set download directory
+if(!dir.exists(data_dir)) dir.create(data_dir)
+dest_gmt_file &lt;- file.path(data_dir, gmt_file_name)
+
+# URL for download
+gmt_url &lt;- paste0(&quot;http://download.baderlab.org/EM_Genesets/current_release/Human/symbol/&quot;, gmt_file_name)
+
+# download GMT file if not already present
+if(!file.exists(dest_gmt_file)){
+  message(&quot;Downloading GMT file to: &quot;, dest_gmt_file)
+  download.file(gmt_url, destfile = dest_gmt_file, mode = &quot;wb&quot;)
+} else {
+  message(&quot;GMT file already exists: &quot;, dest_gmt_file)
+}</code></pre>
+</div>
 </div>
 <div id="visualize-gene-set-enrichment-analysis-in-cytoscape" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> Visualize gene set
@@ -4232,6 +4273,11 @@ Kolberg, L., Raudvere, U., Kuzmin, I., Vilo, J., &amp; Peterson, H.
 (2020). gprofiler2– an r package for gene list functional enrichment
 analysis and namespace conversion toolset g:profiler.
 <em>F1000Research</em>, <em>9 (ELIXIR)</em>(709).
+</div>
+<div id="ref-BaderLab_GeneSets" class="csl-entry">
+Lab, B. (2026). <em>Enrichment map gene sets: Human gene set collections
+in GMT format</em>. University of Toronto; Bader Lab GeneSets database,
+University of Toronto. <a href="http://baderlab.org/GeneSets">http://baderlab.org/GeneSets</a>
 </div>
 <div id="ref-Leeds1991" class="csl-entry">
 Leeds, P., Peltz, S. W., Jacobson, A., &amp; Culbertson, M. R. (1991).
