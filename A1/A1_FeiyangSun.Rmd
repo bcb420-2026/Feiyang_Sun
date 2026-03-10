@@ -549,6 +549,19 @@ FDR <- sum(qlf_table$FDR < 0.05)
 # Pass FDR + fold change
 FDR_FC <- sum(qlf_table$FDR < 0.05 & abs(qlf_table$logFC) > 1)
 
+# export significant genes
+sig_genes <- qlf_table[qlf_table$FDR < 0.05 & abs(qlf_table$logFC) > 1, ]
+
+setwd("/home/rstudio/projects/A1")
+outfile <- "../A2/data/sig_genes.csv"
+dir.create(dirname(outfile), recursive = TRUE, showWarnings = FALSE)
+if (!file.exists(outfile)) {
+  write.csv(sig_genes, outfile, row.names = FALSE)
+  message("CSV file created: ", outfile)
+} else {
+  message("File already exists, skipping write: ", outfile)
+}
+
 cat("Number of genes passing FDR < 0.05:", FDR, 
     "\nNumber of genes passing FDR < 0.05 and |log2FC| > 1:", FDR_FC, "\n")
 
