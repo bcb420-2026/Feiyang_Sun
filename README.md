@@ -4,7 +4,7 @@ repo for bcb420 for Feiyang Sun
 
 [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html) can be accessed here as a html file.
 
-[Assignment 2](https://bcb420-2026.github.io/Feiyang_Sun/A2/A2_FeiyangSun.html) can be accessed here as a html file.
+[Assignment 2](https://bcb420-2026.github.io/Feiyang_Sun/A2/A2_FeiyangSun.html) can be visited here as a html file.
 
 Rendered books for exercises are listed here:
 
