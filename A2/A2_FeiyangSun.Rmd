@@ -70,13 +70,15 @@ In [Assignment 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.htm
 ## Dataset information
 The dataset used in this analysis is GEO accession: **GSE263406**, a publicly available RNA sequencing dataset generated from Homo sapiens cells and released on May 21, 2025. This study [@tan_cell_2025] investigates the role of nonsense-mediated RNA decay (NMD), a conserved RNA quality-control pathway that regulates the stability and turnover of messenger RNAs. NMD plays an important role in gene expression regulation and is involved in multiple biological processes, including development and disease. The dataset focuses on identifying RNAs targeted by the NMD factor UPF3B [@Kadlec2004] during neural differentiation. 
 
+![graphic abstract from the study by Tan et al.](figure/article.png)
+
 Specifically, bulk RNA-seq was performed on neural progenitor cells (NPCs) differentiated from human embryonic stem cells (hESCs). The experimental design compares two groups: a **control (Ctrl)** group and a **UPF3B knockout (UPF3B-KO)** group. By comparing gene expression profiles between these groups, the study aims to identify transcripts whose stability or abundance is affected by the loss of UPF3B. This dataset provides insight into how NMD sensitivity can change depending on cellular context [@Buchwald2010], particularly during the transition from pluripotent stem cells to neural progenitor cells, and helps reveal how RNA-binding proteins may contribute to cell type-specific regulation of RNA decay.
 
 The full dataset (after simple filtering) contains 43884 genes and 12 samples: <br>
 - **(Ctrl_1-6)**: six control replicates where the UPF3B gene is intact and expressed. <br>
 - **(UPF3B.KO_1-6)**: six replicates where UPF3B gene has been genetically disrupted (knockout).
 
-See [Figure 1](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html#visualizing-library-sizes-across-samples) in the A1 html file.
+See [Figure](https://bcb420-2026.github.io/Feiyang_Sun/A1/A1_FeiyangSun.html#visualizing-library-sizes-across-samples) in the A1 html file.
 
 ## Dataset processing
 The bulk mRNA-seq dataset used in this analysis was obtained from GEO and accessed via the GEOquery package in R. Genes with no expression across all samples were removed, leaving 43,884 genes across 12 samples. Library sizes were visualized to assess sample consistency, and Ensembl gene IDs were mapped to HGNC symbols using the `biomaRt` package [@biomaRt], resulting in 31,282 successfully annotated genes. Lowly expressed genes were filtered with `edgeR`’s *filterByExpr()* [@edgeR], retaining **19,197** genes for downstream analysis.
@@ -518,7 +520,85 @@ GSEA, in contrast, uses rank-based enrichment scores, capturing cumulative effec
 
 # Visualize gene set enrichment analysis in Cytoscape
 
-# Question throughout the process
+To interpret and explore the results of gene set enrichment analysis (GSEA), we used Cytoscape [@Shannon2003], a network-based visualization platform. Within Cytoscape, the EnrichmentMap app [@Merico2010] was used to construct a network representation of the enriched pathways. Each node in the network represents a gene set, while edges indicate gene overlap between sets.
+
+## Creating the Enrichment Map
+
+**Parameters:**
+
+- FDR adjusted p-Value (i.e., q-Value) Cutoff: 0.1.
+
+- Edge Cutoff: 0.375.
+
+The EnrichmentMap network (shown in **Figure 6.**) consists of **412** nodes and **1078** edges, with an average of ~7 neighbors per node, indicating relatively high connectivity among gene sets. A clustering coefficient of 0.575 reflects pronounced modularity or functional clustering, while a network density of 0.097 indicates overall sparse connectivity. The network contains 114 connected components, highlighting multiple independent functional modules. Overall, this EnrichmentMap depicts a complex, moderately connected network with distinct clusters of enriched gene sets.
+
+The majority of nodes in the EnrichmentMap are colored blue, indicating that most gene sets are down-regulated. This suggests that the observed biological processes are predominantly repressed under the experimental conditions (**UPF3B-KO** samples). Such a bias toward down-regulation may highlight key pathways that are suppressed and warrant further investigation.
+
+![Raw enrichment map](figure/up_down_pathways_UPF3BKO_raw.png)
+
+**Figure 6. EnrichmentMap visualization of gene set enrichment results.** The network contains 412 nodes and 1078 edges, showing moderately connected gene sets with distinct functional clusters. High clustering highlights modular organization, while multiple connected components reflect independent biological processes. Red nodes indicate up-regulated gene sets (in **UPF3B-KO** samples), while blue nodes indicate down-regulated gene sets. The color intensity typically reflects the magnitude or significance of the enrichment.
+
+## Finding clusters with Annotation
+
+### Generate an annotation set using AutoAnnotate
+
+**Cluster creation:** 
+
+- Perform clustering via `clusterMaker2 app`
+
+- cluster algorithm: `MCL algorithm`
+
+- edge weight column: `similarity coefficient`
+
+- `create singleton clusters`: No
+
+- `layout network to minimize cluster overlap`: No
+
+**Label creation:**
+
+- Generate node labels using `WordCloud app` (most frequent word in cluster and adjacent words)
+
+- label column: `GS_DESCR`
+
+- maximum words per label of `3` (default)
+
+- minimum word occurrence of `1` (default)
+
+- adjacent word bonus of `8` (default)
+
+![Annotated enrichment map](figure/up_down_pathways_UPF3BKO_ann.png)
+
+**Figure 7. Functional clustering of enriched gene sets using AutoAnnotate in Cytoscape.** Gene sets were grouped into functional clusters using the `clusterMaker2` app with the MCL clustering algorithm, based on the similarity coefficient between gene sets. Cluster labels were automatically generated using the `WordCloud` app from the GS_DESCR column, highlighting the most frequently occurring terms within each cluster. The resulting clusters were displayed using the AutoAnnotate grid layout to minimize overlap and improve visualization of functional modules within the enrichment network.
+
+### AutoAnnotate display - after layout
+
+![Enrichment map layout](figure/up_down_pathways_UPF3BKO_f.png)
+
+**Figure 8. Functional clustering of enriched gene sets after layout.** Application of a network layout improved the spatial separation and organization of clusters, facilitating clearer visualization of functional themes and relationships among enriched gene sets.
+
+
+![Enrichment map - theme network](figure/theme.png)
+
+**Figure 9. Summary network created after clustering.** The network was collapsed to a theme network using `AutoAnnotate`, in which each cluster of enriched gene sets is represented by a single node. Applying a network layout improved the spatial organization of clusters, allowing clear visualization of functional themes. The major themes identified include extracellular matrix organization, neurogenesis and neuronal differentiation, synaptic signaling, immune response, and cell adhesion.
+
+## Results summary and interpretations
+
+### Up-regulated pathways/genesets (for UPF3B-KO samples)
+
+The GSEA results for UPF3B knockout samples broadly support the conclusions reported by [@tan_cell_2025]. Specifically, up-regulated pathways in the knockout samples were enriched for *mitochondrial function* and *oxidative-reduction/respiration processes*, suggesting enhanced cellular energy metabolism or compensatory mitochondrial activity. Although [@tan_cell_2025] focused on NMD-mediated transcript regulation and neural development, mitochondrial and metabolic processes are consistent with the reported role of NMD in maintaining neuronal homeostasis and synaptic function. For example, neuronal activity and differentiation require tightly regulated energy production [@@karousis_nonsense-mediated_2016], and the up-regulation of these metabolic pathways may reflect indirect effects of UPF3B loss on neuronal cell physiology.
+
+### Down-regulated pathways/genesets (for UPF3B-KO samples)
+
+In contrast, down-regulated pathways were more numerous and enriched for *cardiac, neural, and extracellular matrix (ECM) development*. This pattern aligns with [@tan_cell_2025] observations that NMD disruption selectively suppresses transcripts involved in neural differentiation and extracellular structural components. Notably, pathways such as Wnt signaling and GDNF/RET signaling -- while not strictly annotated under neural development in the database -- play crucial roles in *neuron differentiation*, axon guidance, and synapse formation, providing mechanistic support for impaired neurodevelopment in UPF3B knockout contexts. Similarly, down-regulation of ECM-related processes echoes previous reports that NMD regulates structural gene expression, potentially influencing tissue organization and vascular development.
+
+### Comparison to Thresholded Methods (ORA)
+
+Compared to thresholded methods like ORA, GSEA provides a more comprehensive, non-binary view of pathway regulation. Whereas ORA identified a smaller subset of significant pathways (e.g., 73 up-regulated vs 388 down-regulated), GSEA highlighted thousands of gene sets with subtle but *coordinated enrichment patterns*. This is particularly useful for detecting mitochondrial and metabolic pathways that may not meet strict fold-change cutoffs but are consistently altered across many genes. Therefore, while the qualitative trends -- stronger down-regulation in neural/ECM pathways -- are consistent between ORA and GSEA, GSEA captures additional pathways that ORA may miss due to arbitrary thresholding, making the comparison informative but not straightforward.
+
+## Supporting Evidence from Literature
+
+Multiple studies provide independent support for these findings. GDNF and RET signaling are well-known to regulate dopaminergic neuron survival, differentiation, and axon guidance [@Chamieh2008], supporting the down-regulation observed in our analysis. Similarly, Wnt signaling is implicated in both skeletal and neural development, including neuron proliferation and axon outgrowth [@Alrahbeni2015]. Mitochondrial and oxidative phosphorylation pathways, up-regulated in UPF3B knockout samples, are critical for neuronal energy supply and synaptic function, consistent with studies showing that mitochondrial dynamics are influenced by NMD activity [@tan_cell_2025]. Together, these publications reinforce that our GSEA results are biologically plausible and reflect mechanisms consistent with the original Tan paper.
+
 
 # Link to journal entry
 A2 journal entry could be found [here](https://github.com/bcb420-2026/Feiyang_Sun/wiki/Assignment-2).
