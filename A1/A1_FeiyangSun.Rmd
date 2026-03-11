@@ -726,6 +726,28 @@ All biological replicates were retained for analysis. Each condition (Ctrl and U
 ### What is the final coverage of your dataset? {.unnumbered}
 The dataset underwent several processing steps. Of the 43,884 original genes, 31,282 (71.3%) were successfully mapped to HGNC symbols. After removing lowly expressed genes, 15,630 genes (35.6% of the original set) were retained for downstream differential expression analysis. This final coverage represents the genes reliably measured and suitable for statistical testing.
 
+```{r output exp file}
+# Export normalized expression data
+setwd("/home/rstudio/projects/A1")
+expfile <- "../A2/data/Expression_norm.txt"
+
+if (!file.exists(expfile)) {
+  write.table(
+  log2_norm_cpm,
+  file = expfile,
+  sep = "\t",
+  row.names = TRUE,
+  col.names = TRUE,
+  quote = FALSE
+)
+  message("DEA CSV file created: ", expfile)
+} else {
+  message("DEA File already exists, skipping write: ", expfile)
+}
+
+
+```
+
 # Link to journal entry
 A1 journal entry could be found [here](https://github.com/bcb420-2026/Feiyang_Sun/wiki/Assignment-1)
 
